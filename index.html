@@ -200,7 +200,7 @@ foot{display:block}
       <div class="stats" id="oStats"></div>
       <div class="subtabs" id="oTabs" role="group" aria-label="Owner sections">
         <button class="chip" data-ot="orders" aria-pressed="true">Orders</button>
-        <button class="chip" data-ot="stock" aria-pressed="false">Menu stock</button>
+        <button class="chip" data-ot="stock" aria-pressed="false">Menu</button>
         <button class="chip" data-ot="settings" aria-pressed="false">Settings</button>
       </div>
       <div id="oOrders">
@@ -210,8 +210,10 @@ foot{display:block}
       </div>
       <div id="oStock" hidden>
         <div class="panel" style="max-width:none;margin-top:14px"><b>Add real photos</b><p class="meta" style="margin:6px 0 10px">Upload photos of your canteen food and they will replace the drawn pictures in the menu. Press "Photo" next to an item, or choose many photos at once. For a bulk upload, name each file after the item (for example masala-dosa.jpg, samosa.jpg, paneer-butter-masala.jpg).</p><label class="btn sm" style="cursor:pointer">Choose many photos<input type="file" id="bulkPhotos" accept="image/*" multiple hidden></label> <span class="meta" id="bulkMsg" role="status"></span></div>
+        <div style="padding-top:14px"><button class="btn sm" data-act="additem">+ Add new item</button></div>
         <div style="padding-top:14px"><input class="search" id="stockQ" type="search" placeholder="Search items" aria-label="Search stock" autocomplete="off"></div>
         <div class="stock" id="stockList"></div>
+        <div id="removedBox"></div>
       </div>
       <div id="oSettings" hidden>
         <div class="panel">
@@ -404,7 +406,7 @@ const LS = {
 };
 let SESSION = LS.get('session', null);   // {role:'student', mobile, name} or {role:'owner', id}
 const DEFAULT_UPI = 'canteen@upi';
-const S = { mode:'local', db:null, uid:'', admin:false, orders:[], soldOut:{}, photos:{}, photoVer:0, settings:{open:true, upi:DEFAULT_UPI}, err:null };
+const S = { mode:'local', db:null, uid:'', admin:false, orders:[], soldOut:{}, photos:{}, photoVer:0, items:{}, removed:{}, settings:{open:true, upi:DEFAULT_UPI}, err:null };
 const listeners = [];
 const onChange = fn => listeners.push(fn);
 const fire = () => listeners.forEach(f => { try{ f(); }catch(e){ console.error(e); } });
@@ -414,6 +416,7 @@ function loadLocal(){
   S.orders = LS.get('orders', []);
   S.soldOut = LS.get('soldOut', {});
   S.photos = LS.get('photos', {}); S.photoVer++;
+  S.items = LS.get('items', {}); S.removed = LS.get('removed', {});
   S.settings = withDefaults(LS.get('settings', {}));
 }
 
@@ -440,6 +443,12 @@ async function initStore(){
       err => { S.err = err; fire(); });
     db.collection('menu').onSnapshot(
       snap => { const o = {}; snap.docs.forEach(d => { if((d.data() || {}).soldOut) o[d.id] = true; }); S.soldOut = o; fire(); },
+      () => {});
+    db.collection('items').onSnapshot(
+      snap => { const o = {}; snap.docs.forEach(d => { o[d.id] = d.data(); }); S.items = o; fire(); },
+      () => {});
+    db.collection('removed').onSnapshot(
+      snap => { const o = {}; snap.docs.forEach(d => { o[d.id] = true; }); S.removed = o; fire(); },
       () => {});
     db.collection('photos').onSnapshot(
       snap => { const o = {}; snap.docs.forEach(d => { const v = (d.data() || {}).img; if(v) o[d.id] = v; }); S.photos = o; S.photoVer++; fire(); },
@@ -514,12 +523,41 @@ async function delPhoto(id){
   else { const p = LS.get('photos', {}); delete p[id]; LS.set('photos', p); loadLocal(); fire(); }
 }
 const imgOf = m => S.photos[m.id] || m.img;
+
+/* ----- the live menu = built-in items (minus removed ones) + items the owner added ----- */
+const CAT_ART = {nashta:['ball','#E3A44A','#A96A1A'], chai:['cup','#B97A44','#F4EEE4'], snacks:['sandwich','#8DBF4F','#E8573A'],
+  sabji:['bowl','#E2602F','#F5E3B8'], roti:['roti','#E9C98A','#C79A52'], thali:['thali','#E8B04B','#C23B2A'],
+  chinese:['noodles','#E8B84A','#F2E8CC'], south:['dosa','#E8B25A','#B87A2C'], cold:['glass','#CFE8F2','#7FB3CC']};
+function customToMenu(id, d){
+  const c = CATS.find(x => x.id === d.cat) || CATS[0], a = CAT_ART[c.id] || CAT_ART.snacks;
+  return {id, cat:c.id, name:d.name || 'Item', price:Number(d.price) || 0, note:d.note || '', img:art(a[0], a[1], a[2], c.tint), custom:true, created:d.created || 0};
+}
+function getMenu(){
+  const extra = Object.keys(S.items).map(id => customToMenu(id, S.items[id])).sort((a, b) => a.created - b.created);
+  return MENU.filter(m => !S.removed[m.id]).concat(extra);
+}
+function menuItem(id){
+  if(S.items[id]) return customToMenu(id, S.items[id]);
+  return S.removed[id] ? null : (MENU_BY_ID[id] || null);
+}
+async function putItem(id, data){
+  if(S.mode === 'db'){ await S.db.doc('items/' + id).set(data); }
+  else { const a = LS.get('items', {}); a[id] = data; LS.set('items', a); loadLocal(); fire(); }
+}
+async function delItem(id){
+  if(S.mode === 'db'){ await S.db.doc('items/' + id).delete(); }
+  else { const a = LS.get('items', {}); delete a[id]; LS.set('items', a); loadLocal(); fire(); }
+}
+async function setRemoved(id, v){
+  if(S.mode === 'db'){ if(v) await S.db.doc('removed/' + id).set({removed:true}); else await S.db.doc('removed/' + id).delete(); }
+  else { const a = LS.get('removed', {}); if(v) a[id] = true; else delete a[id]; LS.set('removed', a); loadLocal(); fire(); }
+}
 const norm = s => String(s).toLowerCase().replace(/\.[a-z0-9]{2,4}$/, '').replace(/[^a-z0-9]/g, '');
 function matchItem(fname){
   const n = norm(fname);
-  const hit = MENU.find(m => norm(m.id) === n) || MENU.find(m => norm(m.name) === n);
+  const all = getMenu(), hit = all.find(m => norm(m.id) === n) || all.find(m => norm(m.name) === n);
   if(hit) return hit;
-  return MENU.filter(m => n.length > 3 && n.includes(norm(m.name))).sort((a, b) => norm(b.name).length - norm(a.name).length)[0];
+  return all.filter(m => n.length > 3 && n.includes(norm(m.name))).sort((a, b) => norm(b.name).length - norm(a.name).length)[0];
 }
 function fileToJpeg(file, w, h){
   w = w || 320; h = h || 240;
@@ -574,7 +612,7 @@ function cardHTML(m){
 }
 function renderMenu(){
   const q = UI.q.trim().toLowerCase();
-  const items = MENU.filter(m => (UI.cat === 'all' || m.cat === UI.cat) && (!q || (m.name + ' ' + m.note).toLowerCase().includes(q)));
+  const items = getMenu().filter(m => (UI.cat === 'all' || m.cat === UI.cat) && (!q || (m.name + ' ' + m.note).toLowerCase().includes(q)));
   const el = $('#menuList');
   if(!items.length){ el.innerHTML = '<div class="empty">No items found. Try a different search.</div>'; return; }
   el.innerHTML = CATS.filter(c => items.some(m => m.cat === c.id)).map(c =>
@@ -582,11 +620,11 @@ function renderMenu(){
 }
 function updateCard(id){
   const el = document.querySelector('[data-card="' + id + '"]');
-  if(el) el.outerHTML = cardHTML(MENU_BY_ID[id]);
+  const mi = menuItem(id); if(el && mi) el.outerHTML = cardHTML(mi);
 }
 
 /* cart */
-const cartItems = () => Object.keys(UI.cart).filter(id => MENU_BY_ID[id] && UI.cart[id] > 0).map(id => ({m:MENU_BY_ID[id], q:UI.cart[id]}));
+const cartItems = () => Object.keys(UI.cart).filter(id => menuItem(id) && UI.cart[id] > 0).map(id => ({m:menuItem(id), q:UI.cart[id]}));
 const cartTotal = () => cartItems().reduce((s, x) => s + x.m.price * x.q, 0);
 const cartCount = () => cartItems().reduce((s, x) => s + x.q, 0);
 function setQty(id, q){
@@ -843,6 +881,58 @@ async function savePassword(){
   $('#newPw').value = ''; $('#newPw2').value = ''; msg.textContent = 'New password saved.';
 }
 
+/* ===== OWNER: add, edit and delete menu items ===== */
+function openItemForm(id){
+  UI.editId = id || '';
+  const cur = id ? S.items[id] : null;
+  const opts = CATS.map(c => `<option value="${c.id}"${cur && cur.cat === c.id ? ' selected' : ''}>${esc(c.label)}</option>`).join('');
+  openSheet(`<h2>${cur ? 'Edit item' : 'Add new item'} <button class="x" data-act="close" aria-label="Close">×</button></h2>
+    <form id="itemForm" novalidate>
+      <div class="fld"><label for="iName">Item name</label><input id="iName" value="${esc(cur ? cur.name : '')}" placeholder="e.g. Veg Kolhapuri" autocomplete="off"></div>
+      <div class="two">
+        <div class="fld"><label for="iCat">Category</label><select id="iCat">${opts}</select></div>
+        <div class="fld"><label for="iPrice">Price (₹)</label><input id="iPrice" type="number" inputmode="numeric" min="1" max="5000" value="${cur ? esc(cur.price) : ''}"></div>
+      </div>
+      <div class="fld"><label for="iNote">Short description (optional)</label><input id="iNote" value="${esc(cur ? cur.note || '' : '')}" placeholder="e.g. Spicy, served with 2 roti" autocomplete="off"></div>
+      <div class="fld"><label for="iPhoto">Photo (optional)</label><input id="iPhoto" type="file" accept="image/*"></div>
+      <div class="err" id="iErr" role="alert"></div>
+      <button class="btn" type="submit">${cur ? 'Save changes' : 'Add to menu'}</button>
+    </form>`, 'item');
+  $('#iName').focus();
+}
+
+async function saveItem(){
+  const err = $('#iErr'), btn = $('#itemForm button[type="submit"]'); err.textContent = '';
+  const name = $('#iName').value.trim(), cat = $('#iCat').value, note = $('#iNote').value.trim();
+  const price = Math.round(Number($('#iPrice').value));
+  const f = $('#iPhoto').files[0];
+  if(name.length < 2){ err.textContent = 'Enter the item name.'; $('#iName').focus(); return; }
+  if(!(price >= 1 && price <= 5000)){ err.textContent = 'Enter a price between 1 and 5000.'; $('#iPrice').focus(); return; }
+  const id = UI.editId || ('c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5));
+  const old = S.items[id];
+  btn.disabled = true;
+  try{
+    await putItem(id, {name, cat, price, note, created: old && old.created ? old.created : Date.now()});
+    if(f) await putPhoto(id, await fileToJpeg(f));
+  }catch(e){
+    err.textContent = 'Could not save the item. Check your internet and try again (a smaller photo may help).';
+    btn.disabled = false; return;
+  }
+  closeSheet(); toast(old ? 'Item updated' : 'Item added to the menu'); renderAll();
+}
+
+async function deleteMenuItem(id){
+  if(S.items[id]){
+    await delItem(id);
+    if(S.photos[id]) await delPhoto(id);
+    if(S.soldOut[id]) await putSoldOut(id, false);
+  } else {
+    await setRemoved(id, true);
+  }
+  delete UI.cart[id]; LS.set('cart', UI.cart);
+  toast('Item deleted');
+}
+
 /* ===== OWNER SIDE ===== */
 const ownerAllowed = () => !!(SESSION && SESSION.role === 'owner');
 let lastNew = -1, clearArmed = false;
@@ -895,11 +985,15 @@ function renderOwner(){
   }
   if(UI.ot === 'stock'){
     const q = UI.stockQ.trim().toLowerCase();
-    $('#stockList').innerHTML = MENU.filter(m => !q || m.name.toLowerCase().includes(q)).map(m => {
-      const out = !!S.soldOut[m.id];
-      const has = !!S.photos[m.id];
-      return `<div class="stk"><img src="${imgOf(m)}" alt="" width="64" height="48"><div class="n">${esc(m.name)}<div class="meta">${rs(m.price)} · ${has ? 'Real photo' : 'Drawn picture'}</div><div class="acts" style="margin-top:6px"><button class="btn sm ${out ? 'bad' : 'alt'}" data-act="stock" data-id="${m.id}" aria-pressed="${out}">${out ? 'Sold out' : 'Available'}</button><label class="btn sm alt" style="cursor:pointer">Photo<input type="file" accept="image/*" hidden data-photo="${m.id}"></label>${has ? `<button class="btn sm alt" data-act="delphoto" data-id="${m.id}">Remove photo</button>` : ''}</div></div></div>`;
-    }).join('');
+    $('#stockList').innerHTML = getMenu().filter(m => !q || m.name.toLowerCase().includes(q)).map(m => {
+      const out = !!S.soldOut[m.id], has = !!S.photos[m.id], armed = UI.delArm === m.id;
+      const catName = esc((CATS.find(c => c.id === m.cat) || {}).label || '');
+      return `<div class="stk"><img src="${imgOf(m)}" alt="" width="64" height="48"><div class="n">${esc(m.name)}<div class="meta">${rs(m.price)} \u00B7 ${catName} \u00B7 ${has ? 'Real photo' : 'Drawn picture'}${m.custom ? ' \u00B7 Your item' : ''}</div><div class="acts" style="margin-top:6px"><button class="btn sm ${out ? 'bad' : 'alt'}" data-act="stock" data-id="${m.id}" aria-pressed="${out}">${out ? 'Sold out' : 'Available'}</button><label class="btn sm alt" style="cursor:pointer">Photo<input type="file" accept="image/*" hidden data-photo="${m.id}"></label>${has ? `<button class="btn sm alt" data-act="delphoto" data-id="${m.id}">Remove photo</button>` : ''}${m.custom ? `<button class="btn sm alt" data-act="edititem" data-id="${m.id}">Edit</button>` : ''}<button class="btn sm bad" data-act="delitem" data-id="${m.id}">${armed ? 'Sure? Delete' : 'Delete'}</button></div></div></div>`;
+    }).join('') || '<div class="empty" style="grid-column:1/-1">No items found.</div>';
+    const rem = MENU.filter(m => S.removed[m.id]);
+    $('#removedBox').innerHTML = rem.length
+      ? `<div class="panel" style="max-width:none"><b>Removed from menu (${rem.length})</b><div class="stock" style="padding-bottom:0">${rem.map(m => `<div class="stk"><div class="n">${esc(m.name)}<div class="meta">${rs(m.price)}</div></div><button class="btn sm alt" data-act="restoreitem" data-id="${m.id}">Restore</button></div>`).join('')}</div></div>`
+      : '';
   }
   if(UI.ot === 'settings'){
     $('#openBtn').setAttribute('aria-pressed', String(!!S.settings.open));
@@ -934,9 +1028,9 @@ function renderAll(){
   $('#tab-owner').hidden = !ownerAllowed();
 
   let changed = false;
-  Object.keys(UI.cart).forEach(id => { if(S.soldOut[id]){ delete UI.cart[id]; changed = true; } });
+  Object.keys(UI.cart).forEach(id => { if(S.soldOut[id] || !menuItem(id)){ delete UI.cart[id]; changed = true; } });
   if(changed) LS.set('cart', UI.cart);
-  const sig = JSON.stringify(S.soldOut) + '|' + S.photoVer;
+  const sig = JSON.stringify(S.soldOut) + '|' + S.photoVer + '|' + JSON.stringify(S.items) + '|' + Object.keys(S.removed).sort().join(',');
   if(sig !== UI.menuSig || changed){ UI.menuSig = sig; renderMenu(); }
   renderCartBar();
 
@@ -962,9 +1056,10 @@ async function run(btn, fn){
 document.addEventListener('click', e => {
   const t = e.target.closest('button'); if(!t) return;
   const d = t.dataset;
+  if(UI.delArm && d.act !== 'delitem'){ UI.delArm = ''; if(UI.tab === 'owner') setTimeout(renderOwner, 0); }
   if(d.tab) return showTab(d.tab);
   if(d.cat){ UI.cat = d.cat; renderChips(); renderMenu(); return; }
-  if(d.inc){ if(!S.soldOut[d.inc]) setQty(d.inc, (UI.cart[d.inc] || 0) + 1); return; }
+  if(d.inc){ if(!S.soldOut[d.inc] && menuItem(d.inc)) setQty(d.inc, (UI.cart[d.inc] || 0) + 1); return; }
   if(d.dec) return setQty(d.dec, (UI.cart[d.dec] || 0) - 1);
   if(d.slot){ form.slot = d.slot; $('#slotSeg').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.slot === form.slot))); return; }
   if(d.pay){ form.pay = d.pay; $('#paySeg').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.pay === form.pay))); renderPayBox(); return; }
@@ -1003,11 +1098,19 @@ document.addEventListener('click', e => {
     case 'cancel': case 'mycancel': return run(t, () => patchOrder(d.id, {status:'cancelled'}));
     case 'stock': return run(t, () => putSoldOut(d.id, !S.soldOut[d.id]));
     case 'delphoto': return run(t, () => delPhoto(d.id));
+    case 'additem': return openItemForm('');
+    case 'edititem': return openItemForm(d.id);
+    case 'delitem': {
+      if(UI.delArm !== d.id){ UI.delArm = d.id; renderOwner(); return; }
+      UI.delArm = ''; return run(t, () => deleteMenuItem(d.id));
+    }
+    case 'restoreitem': return run(t, () => setRemoved(d.id, false));
   }
 });
 document.addEventListener('submit', e => {
   e.preventDefault();
   if(e.target.id === 'loginForm') handleLogin(e.target.dataset.kind);
+  else if(e.target.id === 'itemForm') saveItem();
 });
 document.addEventListener('input', e => {
   const id = e.target.id;

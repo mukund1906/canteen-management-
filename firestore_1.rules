@@ -14,6 +14,8 @@ service cloud.firestore {
     match /orders/{id}   { allow read, write: if true; }
     match /menu/{id}     { allow read, write: if true; }
     match /photos/{id}   { allow read, write: if true; }
+    match /items/{id}    { allow read, write: if true; }
+    match /removed/{id}  { allow read, write: if true; }
     match /settings/{id} { allow read, write: if true; }
   }
 }
