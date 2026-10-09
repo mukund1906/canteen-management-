@@ -64,6 +64,11 @@ h1,h2,h3{font-family:var(--f-display);line-height:1.15;margin:0;text-wrap:balanc
 /* menu */
 .tools{position:sticky;top:calc(env(safe-area-inset-top,0px) + var(--hh,92px));z-index:10;background:var(--bg);padding-block:12px 8px}
 .search{width:100%;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:11px 14px}
+.sbox{position:relative}
+.sbox svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+.sbox .search{padding:13px 44px 13px 42px;font-size:1rem;border-width:1.5px}
+.sbox .search::-webkit-search-cancel-button{display:none}
+.sclr{position:absolute;right:7px;top:50%;transform:translateY(-50%);background:var(--surface2);border:0;border-radius:99px;width:32px;height:32px;font-size:1.2rem;line-height:1}
 .chips{display:flex;gap:8px;overflow-x:auto;padding-block:10px 2px;scrollbar-width:thin}
 .chip{flex:0 0 auto;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:7px 14px;border-radius:99px;font-weight:500;font-size:.88rem}
 .chip[aria-pressed="true"]{background:var(--brand);color:var(--brand-ink);border-color:var(--brand);font-weight:700}
@@ -184,7 +189,11 @@ foot{display:block}
 <main>
   <section id="v-menu" class="wrap">
     <div class="tools">
-      <input class="search" id="q" type="search" placeholder="Search: samosa, dosa, paneer..." aria-label="Menu search" autocomplete="off">
+      <div class="sbox">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+        <input class="search" id="q" type="search" placeholder="Search the menu: samosa, dosa, paneer..." aria-label="Search the menu" autocomplete="off" enterkeyhint="search">
+        <button type="button" class="sclr" id="qClear" data-act="clearq" aria-label="Clear search" hidden>×</button>
+      </div>
       <div class="chips" id="chips" role="group" aria-label="Categories"></div>
     </div>
     <div id="menuList"></div>
@@ -610,12 +619,26 @@ function cardHTML(m){
     : `<button class="add" data-inc="${m.id}" aria-label="Add: ${esc(m.name)}">Add</button>`;
   return `<article class="card${out ? ' soldout' : ''}" data-card="${m.id}"><img src="${imgOf(m)}" alt="${esc(m.name)}" width="160" height="120" loading="lazy">${out ? '<span class="tag">Sold out</span>' : ''}<div class="body"><div class="nm">${esc(m.name)}</div><div class="ds">${esc(m.note)}</div><div class="row"><span class="price">${rs(m.price)}</span>${ctl}</div></div></article>`;
 }
+function menuMatches(m, q){
+  const cat = (CATS.find(c => c.id === m.cat) || {}).label || '';
+  const hay = (m.name + ' ' + m.note + ' ' + cat).toLowerCase();
+  if(q.split(/\s+/).filter(Boolean).every(w => hay.includes(w))) return true;
+  const sq = q.replace(/[^a-z0-9]/g, '');
+  return sq.length > 1 && hay.replace(/[^a-z0-9]/g, '').includes(sq);
+}
 function renderMenu(){
-  const q = UI.q.trim().toLowerCase();
-  const items = getMenu().filter(m => (UI.cat === 'all' || m.cat === UI.cat) && (!q || (m.name + ' ' + m.note).toLowerCase().includes(q)));
+  const q = UI.q.trim().toLowerCase(), qs = esc(UI.q.trim());
+  const items = getMenu().filter(m => q ? menuMatches(m, q) : (UI.cat === 'all' || m.cat === UI.cat));
   const el = $('#menuList');
-  if(!items.length){ el.innerHTML = '<div class="empty">No items found. Try a different search.</div>'; return; }
-  el.innerHTML = CATS.filter(c => items.some(m => m.cat === c.id)).map(c =>
+  $('#qClear').hidden = !UI.q;
+  if(!items.length){
+    el.innerHTML = q
+      ? `<div class="empty">No items found for "${qs}".<br>Try another name, like samosa, dosa or paneer.<br><button class="btn sm alt" data-act="clearq" style="margin-top:14px">Clear search</button></div>`
+      : '<div class="empty">No items in this category.</div>';
+    return;
+  }
+  const line = q ? `<p class="meta" style="margin:12px 0 0">${items.length} ${items.length === 1 ? 'result' : 'results'} for "<b>${qs}</b>" in all categories</p>` : '';
+  el.innerHTML = line + CATS.filter(c => items.some(m => m.cat === c.id)).map(c =>
     `<section class="sec"><h2>${esc(c.label)}</h2><div class="grid">${items.filter(m => m.cat === c.id).map(cardHTML).join('')}</div></section>`).join('');
 }
 function updateCard(id){
@@ -1081,6 +1104,7 @@ document.addEventListener('click', e => {
   }
   switch(d.act){
     case 'close': return closeSheet();
+    case 'clearq': UI.q = ''; $('#q').value = ''; renderMenu(); $('#q').focus(); return;
     case 'place': return placeOrder();
     case 'myorders': closeSheet(); return showTab('orders');
     case 'copy': {
