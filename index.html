@@ -1,0 +1,1054 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="icon" href="data:,">
+<style>:root{color-scheme:light;padding-block:env(safe-area-inset-top,0px) env(safe-area-inset-bottom,0px)}body{margin:0;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Canteen Connect</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=DM+Mono:wght@500&family=DM+Sans:wght@400;500;700&display=swap">
+<style>
+/* Layout: sticky green header with tabs, category chips, 2-up food cards on phone, bottom cart bar, checkout bottom-sheet. Owner side is a status board. */
+:root{
+  --bg:#F1F5F0; --surface:#FFFFFF; --surface2:#E6EDE6; --ink:#12261F; --muted:#586C62; --line:#D3DCD4;
+  --hero:#0F4C3A; --hero-ink:#F2FBF5; --brand:#0F4C3A; --brand-ink:#FFFFFF;
+  --accent:#F2A900; --accent-ink:#2B1E00;
+  --good:#1B8049; --good-bg:#DDF1E4; --warn:#8F5400; --warn-bg:#FBEBC9; --bad:#B3321F; --bad-bg:#FBDDD7; --focus:#1D6FD1;
+  --shadow:0 1px 2px rgba(15,40,30,.08),0 6px 20px rgba(15,40,30,.06);
+  --f-display:'Bricolage Grotesque','Trebuchet MS',system-ui,sans-serif;
+  --f-body:'DM Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --f-mono:'DM Mono',ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0C1511; --surface:#14211B; --surface2:#1B2C24; --ink:#E7F0EA; --muted:#9BB0A5; --line:#273A30;
+    --hero:#0A2A21; --hero-ink:#EAF6EF; --brand:#34B88A; --brand-ink:#04140D;
+    --accent:#F5B91E; --accent-ink:#2B1E00;
+    --good:#5BD08E; --good-bg:#16382A; --warn:#F0B54A; --warn-bg:#3A2D10; --bad:#F08A78; --bad-bg:#3E1D17; --focus:#6AA9F0;
+    --shadow:0 1px 2px rgba(0,0,0,.4); color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0C1511; --surface:#14211B; --surface2:#1B2C24; --ink:#E7F0EA; --muted:#9BB0A5; --line:#273A30;
+  --hero:#0A2A21; --hero-ink:#EAF6EF; --brand:#34B88A; --brand-ink:#04140D;
+  --accent:#F5B91E; --accent-ink:#2B1E00;
+  --good:#5BD08E; --good-bg:#16382A; --warn:#F0B54A; --warn-bg:#3A2D10; --bad:#F08A78; --bad-bg:#3E1D17; --focus:#6AA9F0;
+  --shadow:0 1px 2px rgba(0,0,0,.4); color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;padding-inline:0}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.wrap{max-width:1040px;margin-inline:auto;padding-inline:16px}
+h1,h2,h3{font-family:var(--f-display);line-height:1.15;margin:0;text-wrap:balance}
+
+/* header */
+.top{background:var(--hero);color:var(--hero-ink);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.top .wrap{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;padding-block:10px}
+.brand{display:flex;flex-direction:column;min-width:0;margin-right:auto}
+.brand b{font-family:var(--f-display);font-weight:800;font-size:1.3rem;letter-spacing:-.01em}
+.brand span{font-size:.78rem;opacity:.8}
+.pill{display:inline-flex;align-items:center;gap:6px;border-radius:99px;padding:3px 10px;font-size:.78rem;font-weight:700;background:var(--good-bg);color:var(--good)}
+.pill.off{background:var(--bad-bg);color:var(--bad)}
+.pill i{width:8px;height:8px;border-radius:50%;background:currentColor;display:block}
+.hbtn{border:1.5px solid var(--hero-ink);background:transparent;color:var(--hero-ink);border-radius:99px;padding:5px 14px;font-weight:700;font-size:.85rem;max-width:11rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.linkbtn{background:none;border:0;color:var(--brand);font-weight:700;text-decoration:underline;padding:0;font-size:inherit}
+.tabs{display:flex;gap:4px;width:100%;overflow-x:auto}
+.tab{flex:1 0 auto;background:transparent;border:0;color:var(--hero-ink);opacity:.78;padding:9px 14px;border-radius:10px 10px 0 0;font-weight:700;position:relative;white-space:nowrap}
+.tab[aria-selected="true"]{opacity:1;background:var(--bg);color:var(--ink)}
+.badge{display:inline-grid;place-items:center;min-width:19px;height:19px;padding:0 5px;border-radius:99px;background:var(--accent);color:var(--accent-ink);font-size:.72rem;margin-left:6px}
+.note-bar{background:var(--warn-bg);color:var(--warn);font-size:.85rem;padding:8px 0}
+.note-bar.bad{background:var(--bad-bg);color:var(--bad)}
+
+/* menu */
+.tools{position:sticky;top:calc(env(safe-area-inset-top,0px) + var(--hh,92px));z-index:10;background:var(--bg);padding-block:12px 8px}
+.search{width:100%;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:11px 14px}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-block:10px 2px;scrollbar-width:thin}
+.chip{flex:0 0 auto;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:7px 14px;border-radius:99px;font-weight:500;font-size:.88rem}
+.chip[aria-pressed="true"]{background:var(--brand);color:var(--brand-ink);border-color:var(--brand);font-weight:700}
+.sec{padding-block:18px 4px}
+.sec h2{font-size:1.25rem;margin-bottom:10px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;min-width:0;position:relative}
+.card img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block;background:var(--surface2)}
+.card .body{padding:10px 12px 12px;display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
+.card .nm{font-weight:700;line-height:1.25}
+.card .ds{font-size:.8rem;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card .row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto;padding-top:8px}
+.price{font-family:var(--f-display);font-weight:800;font-size:1.1rem;font-variant-numeric:tabular-nums}
+.add{border:1.5px solid var(--brand);background:transparent;color:var(--brand);font-weight:700;border-radius:10px;padding:6px 16px}
+.add:hover{background:var(--brand);color:var(--brand-ink)}
+.step{display:inline-flex;align-items:center;background:var(--brand);color:var(--brand-ink);border-radius:10px;overflow:hidden}
+.step button{background:transparent;border:0;color:inherit;width:32px;height:32px;font-size:1.1rem;font-weight:700}
+.step b{min-width:22px;text-align:center;font-variant-numeric:tabular-nums}
+.soldout{opacity:.55}
+.soldout .tag{position:absolute;top:8px;left:8px;background:var(--bad);color:#fff;font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:99px}
+.empty{padding:40px 0;text-align:center;color:var(--muted)}
+
+/* cart bar */
+.cartbar{position:fixed;left:0;right:0;bottom:0;z-index:30;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));background:linear-gradient(transparent,var(--bg) 40%)}
+.cartbar button{display:flex;width:100%;max-width:640px;margin-inline:auto;align-items:center;justify-content:space-between;gap:12px;background:var(--accent);color:var(--accent-ink);border:0;border-radius:14px;padding:14px 18px;font-weight:700;box-shadow:var(--shadow)}
+.cartbar .amt{font-family:var(--f-display);font-weight:800;font-size:1.1rem}
+main{padding-bottom:110px}
+
+/* sheet */
+.scrim{position:fixed;inset:0;background:rgba(5,15,10,.55);z-index:40;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--surface);width:100%;max-width:560px;max-height:92%;overflow-y:auto;border-radius:20px 20px 0 0;padding:18px 16px calc(20px + env(safe-area-inset-bottom,0px))}
+@media(min-width:700px){.scrim{align-items:center}.sheet{border-radius:20px}}
+.sheet h2{font-size:1.4rem;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.x{background:var(--surface2);border:0;border-radius:99px;width:34px;height:34px;font-size:1.1rem;line-height:1}
+.lines{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.line{display:flex;align-items:center;gap:10px;justify-content:space-between}
+.line .l{min-width:0;flex:1}
+.line .l span{display:block;font-size:.8rem;color:var(--muted)}
+.tot{display:flex;justify-content:space-between;font-weight:700;border-top:1px dashed var(--line);padding-top:10px;margin-bottom:14px}
+.fld{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.fld label,.lbl{font-size:.8rem;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--muted)}
+.fld input,.fld textarea,.fld select{border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:10px 12px;width:100%}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:420px){.two{grid-template-columns:1fr}}
+.seg{display:flex;flex-wrap:wrap;gap:8px}
+.seg button{border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:8px 12px;font-size:.88rem}
+.seg button[aria-pressed="true"]{background:var(--brand);color:var(--brand-ink);border-color:var(--brand);font-weight:700}
+.pay{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+@media(max-width:420px){.pay{grid-template-columns:1fr}}
+.pay button{text-align:left;border:1.5px solid var(--line);background:var(--bg);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+.pay button b{font-size:.95rem}.pay button span{font-size:.78rem;color:var(--muted)}
+.pay button[aria-pressed="true"]{border-color:var(--brand);box-shadow:inset 0 0 0 1px var(--brand)}
+.upi{border:1px dashed var(--line);border-radius:12px;padding:12px;margin-bottom:12px;display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+.upi .qr{background:#fff;padding:8px;border-radius:10px;line-height:0;flex:0 0 auto}
+.upi .info{flex:1 1 180px;min-width:0;display:flex;flex-direction:column;gap:6px}
+.mono{font-family:var(--f-mono);overflow-wrap:anywhere}
+.btn{border:0;background:var(--brand);color:var(--brand-ink);font-weight:700;border-radius:12px;padding:13px 18px;width:100%}
+.btn.sm{width:auto;padding:8px 14px;border-radius:10px;font-size:.88rem}
+.btn.alt{background:var(--surface2);color:var(--ink)}
+.btn.bad{background:var(--bad-bg);color:var(--bad)}
+label.btn{display:inline-block;text-align:center}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.err{color:var(--bad);font-size:.85rem;min-height:1.2em;margin:4px 0 8px}
+.done{text-align:center;padding:10px 0 4px}
+.token{font-family:var(--f-mono);font-size:3.2rem;font-weight:500;color:var(--brand);letter-spacing:.02em;margin:4px 0}
+
+/* orders */
+.olist{display:grid;gap:12px;padding-block:16px;grid-template-columns:repeat(auto-fill,minmax(290px,1fr))}
+.ord{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.ord header{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.ord .tk{font-family:var(--f-mono);font-size:1.4rem;font-weight:500}
+.st{font-size:.78rem;font-weight:700;padding:3px 10px;border-radius:99px;background:var(--surface2)}
+.st.new{background:var(--warn-bg);color:var(--warn)}.st.cooking{background:var(--surface2);color:var(--ink)}
+.st.ready{background:var(--good-bg);color:var(--good)}.st.cancelled{background:var(--bad-bg);color:var(--bad)}
+.ord ul{margin:0;padding:0;list-style:none;font-size:.9rem}
+.ord li{display:flex;justify-content:space-between;gap:8px}
+.meta{font-size:.82rem;color:var(--muted)}
+.ord .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.ord.ready{border-color:var(--good);box-shadow:inset 0 0 0 1px var(--good)}
+.paytag{font-size:.78rem;font-weight:700;border-radius:8px;padding:2px 8px;background:var(--surface2)}
+.paytag.paid{background:var(--good-bg);color:var(--good)}.paytag.due{background:var(--warn-bg);color:var(--warn)}
+
+/* owner */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;padding-top:16px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px}
+.stat b{display:block;font-family:var(--f-display);font-size:1.5rem;font-variant-numeric:tabular-nums}
+.stat span{font-size:.78rem;color:var(--muted)}
+.subtabs{display:flex;gap:8px;overflow-x:auto;padding-top:14px}
+.stock{display:grid;gap:8px;padding-block:14px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
+.stk{display:flex;align-items:flex-start;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 10px}
+.stk img{width:64px;height:48px;border-radius:6px;object-fit:cover;flex:0 0 auto}
+.stk .n{flex:1;min-width:0;font-weight:500;font-size:.9rem}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;margin-top:16px;max-width:560px}
+.lock{max-width:380px;margin:40px auto;text-align:center}
+.toast{position:fixed;left:50%;bottom:calc(86px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;z-index:60;font-size:.9rem;max-width:90%;text-align:center}
+foot{display:block}
+.foot{padding:6px 0 20px;font-size:.78rem;color:var(--muted)}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand"><b>Canteen Connect</b><span>Line mein mat khade ho, class se order karo</span></div>
+    <span class="pill" id="openPill"><i></i><em id="openTxt">Khula hai</em></span>
+    <button class="hbtn" id="authBtn" data-act="openLogin">Login</button>
+    <nav class="tabs" role="tablist" aria-label="Sections">
+      <button class="tab" role="tab" id="tab-menu" data-tab="menu" aria-selected="true">Menu</button>
+      <button class="tab" role="tab" id="tab-orders" data-tab="orders" aria-selected="false">Mere Orders<span class="badge" id="bOrders" hidden>0</span></button>
+      <button class="tab" role="tab" id="tab-owner" data-tab="owner" aria-selected="false">Owner<span class="badge" id="bOwner" hidden>0</span></button>
+    </nav>
+  </div>
+</header>
+<div id="modeNote" class="note-bar" hidden><div class="wrap"></div></div>
+
+<main>
+  <section id="v-menu" class="wrap">
+    <div class="tools">
+      <input class="search" id="q" type="search" placeholder="Kuch dhundhein: samosa, dosa, paneer..." aria-label="Menu search" autocomplete="off">
+      <div class="chips" id="chips" role="group" aria-label="Categories"></div>
+    </div>
+    <div id="menuList"></div>
+  </section>
+
+  <section id="v-orders" class="wrap" hidden>
+    <div id="myOrders"></div>
+  </section>
+
+  <section id="v-owner" class="wrap" hidden>
+    <div id="ownerLock"></div>
+    <div id="ownerBody" hidden>
+      <div class="stats" id="oStats"></div>
+      <div class="subtabs" id="oTabs" role="group" aria-label="Owner sections">
+        <button class="chip" data-ot="orders" aria-pressed="true">Orders</button>
+        <button class="chip" data-ot="stock" aria-pressed="false">Menu stock</button>
+        <button class="chip" data-ot="settings" aria-pressed="false">Settings</button>
+      </div>
+      <div id="oOrders">
+        <div class="chips" id="oFilter" role="group" aria-label="Order status"></div>
+        <div class="olist" id="oList"></div>
+        <div style="padding-bottom:10px"><button class="btn sm alt" id="clearDone">Purane orders hatao</button> <span class="meta" id="clearMsg"></span></div>
+      </div>
+      <div id="oStock" hidden>
+        <div class="panel" style="max-width:none;margin-top:14px"><b>Asli photos lagayein</b><p class="meta" style="margin:6px 0 10px">Apne canteen ke khane ki photo upload karein, wo menu mein drawn picture ki jagah dikhegi. Har item ke saamne "Photo" dabayein, ya bahut saari photos ek saath chunein. Ek saath wale upload mein file ka naam item ke naam jaisa rakhein (jaise masala-dosa.jpg, samosa.jpg, paneer-butter-masala.jpg).</p><label class="btn sm" style="cursor:pointer">Bahut saari photos chunein<input type="file" id="bulkPhotos" accept="image/*" multiple hidden></label> <span class="meta" id="bulkMsg" role="status"></span></div>
+        <div style="padding-top:14px"><input class="search" id="stockQ" type="search" placeholder="Item dhundhein" aria-label="Search stock" autocomplete="off"></div>
+        <div class="stock" id="stockList"></div>
+      </div>
+      <div id="oSettings" hidden>
+        <div class="panel">
+          <h3 style="margin-bottom:12px">Canteen settings</h3>
+          <div class="fld"><span class="lbl">Canteen abhi</span>
+            <div class="seg"><button id="openBtn" aria-pressed="true">Khula hai</button><button id="closeBtn" aria-pressed="false">Band hai</button></div>
+          </div>
+          <div class="fld"><label for="upiId">UPI ID (online payment ke liye)</label><input id="upiId" placeholder="naam@bank" autocomplete="off"></div>
+          <button class="btn sm" id="saveSet">Save karein</button>
+          <p class="meta" id="setMsg" role="status"></p>
+        </div>
+        <div class="panel">
+          <h3 style="margin-bottom:12px">Owner password badlein</h3>
+          <div class="two">
+            <div class="fld"><label for="newPw">Naya password</label><input id="newPw" type="password" autocomplete="new-password"></div>
+            <div class="fld"><label for="newPw2">Dobara likhein</label><input id="newPw2" type="password" autocomplete="new-password"></div>
+          </div>
+          <button class="btn sm" data-act="savepw">Password save karein</button>
+          <p class="meta" id="pwMsg" role="status"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+  <div class="wrap foot">Pure veg menu. Rates student budget ke hisaab se. Online payment ke baad owner UTR number check karke payment confirm karta hai.</div>
+</main>
+
+<div class="cartbar" id="cartbar" hidden><button id="openCart"><span id="cartTxt">0 items</span><span class="amt" id="cartAmt">0</span></button></div>
+<div class="scrim" id="scrim" hidden><div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Checkout"></div></div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>window.STANDALONE_BUILD = true;</script>
+<script src="firebase-config.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+/* ===== MENU DATA + DRAWN FOOD IMAGES ===== */
+const CATS = [
+  {id:'nashta', label:'Nashta', tint:'#FFF0D2'},
+  {id:'chai', label:'Chai & Coffee', tint:'#F7E4D4'},
+  {id:'snacks', label:'Snacks', tint:'#FFE6D8'},
+  {id:'sabji', label:'Sabji', tint:'#FFE2C6'},
+  {id:'roti', label:'Roti & Rice', tint:'#F5ECD2'},
+  {id:'thali', label:'Thali', tint:'#E3EEDB'},
+  {id:'chinese', label:'Chinese', tint:'#FFDCD5'},
+  {id:'south', label:'South Indian', tint:'#EDF2D3'},
+  {id:'cold', label:'Thanda', tint:'#DCEBF3'}
+];
+
+const ART = {
+  cup:(a,b)=>`<ellipse cx="80" cy="96" rx="46" ry="9" fill="#00000018"/><ellipse cx="80" cy="92" rx="40" ry="8" fill="#fff"/><path d="M52 52h56v22a28 20 0 0 1-56 0z" fill="${b}"/><ellipse cx="80" cy="52" rx="28" ry="6" fill="${a}"/><path d="M108 58h8a9 9 0 0 1 0 18h-10" fill="none" stroke="${b}" stroke-width="5"/><path d="M68 40c-6-8 6-10 0-18M82 40c-6-8 6-10 0-18M96 40c-6-8 6-10 0-18" fill="none" stroke="#8a8a8a" stroke-opacity=".5" stroke-width="3" stroke-linecap="round"/>`,
+  glass:(a,b)=>`<path d="M54 24h52l-6 70H60z" fill="#ffffff90" stroke="${b}" stroke-width="3" stroke-linejoin="round"/><path d="M57 46h46l-3.500 48H60.500z" fill="${a}"/><rect x="57" y="40" width="46" height="9" rx="4" fill="${b}" opacity=".35"/><path d="M92 14l-8 40" stroke="#E4572E" stroke-width="4" stroke-linecap="round"/>`,
+  tri:(a,b)=>`<ellipse cx="80" cy="98" rx="58" ry="8" fill="#00000014"/><path d="M26 92L62 28l36 64z" fill="${a}" stroke="${b}" stroke-width="3" stroke-linejoin="round"/><path d="M70 92l34-56 34 56z" fill="${a}" stroke="${b}" stroke-width="3" stroke-linejoin="round"/><g fill="${b}" opacity=".5"><circle cx="62" cy="64" r="2.5"/><circle cx="54" cy="78" r="2.5"/><circle cx="70" cy="80" r="2.5"/><circle cx="104" cy="68" r="2.5"/><circle cx="96" cy="82" r="2.5"/><circle cx="112" cy="82" r="2.5"/></g>`,
+  ball:(a,b)=>`<ellipse cx="80" cy="100" rx="60" ry="8" fill="#00000014"/><circle cx="80" cy="54" r="28" fill="${a}" stroke="${b}" stroke-width="3"/><circle cx="52" cy="76" r="26" fill="${a}" stroke="${b}" stroke-width="3"/><circle cx="108" cy="76" r="26" fill="${a}" stroke="${b}" stroke-width="3"/><g fill="${b}" opacity=".45"><circle cx="72" cy="46" r="2.5"/><circle cx="88" cy="58" r="2.5"/><circle cx="46" cy="70" r="2.5"/><circle cx="58" cy="84" r="2.5"/><circle cx="102" cy="70" r="2.5"/><circle cx="114" cy="84" r="2.5"/></g>`,
+  bowl:(a,b)=>`<ellipse cx="80" cy="102" rx="52" ry="7" fill="#00000014"/><path d="M26 56h108a54 44 0 0 1-108 0z" fill="#fff" stroke="#00000022" stroke-width="2"/><ellipse cx="80" cy="56" rx="54" ry="12" fill="${a}"/><g fill="${b}"><rect x="52" y="48" width="14" height="12" rx="3"/><rect x="74" y="52" width="14" height="12" rx="3"/><rect x="96" y="47" width="14" height="12" rx="3"/></g>`,
+  roti:(a,b)=>`<ellipse cx="80" cy="98" rx="56" ry="9" fill="#00000014"/><ellipse cx="80" cy="84" rx="50" ry="14" fill="${b}"/><ellipse cx="80" cy="76" rx="50" ry="14" fill="${a}"/><ellipse cx="80" cy="66" rx="50" ry="14" fill="${b}"/><ellipse cx="80" cy="58" rx="50" ry="14" fill="${a}" stroke="${b}" stroke-width="2"/><g fill="${b}" opacity=".6"><circle cx="64" cy="56" r="3"/><circle cx="86" cy="60" r="3"/><circle cx="100" cy="54" r="2.5"/><circle cx="76" cy="52" r="2"/></g>`,
+  rice:(a,b)=>`<ellipse cx="80" cy="96" rx="58" ry="12" fill="#fff" stroke="#00000022" stroke-width="2"/><path d="M34 90c0-36 20-52 42-52s42 16 42 52z" fill="#FFFDF4" stroke="#00000018" stroke-width="2"/><g fill="${a}" opacity=".6"><circle cx="62" cy="66" r="3"/><circle cx="78" cy="52" r="3"/><circle cx="92" cy="72" r="3"/><circle cx="72" cy="80" r="3"/></g><path d="M112 82a17 14 0 0 1 34 0v4h-34z" fill="${b}" stroke="#00000018" stroke-width="2"/>`,
+  noodles:(a,b)=>`<ellipse cx="80" cy="102" rx="50" ry="7" fill="#00000014"/><path d="M30 60h100a50 40 0 0 1-100 0z" fill="${b}"/><path d="M36 58c10-22 24-26 30-12 6-18 22-20 28-4 6-14 20-10 28 4 4 6 2 12-2 12H40z" fill="${a}"/><path d="M44 56c8-8 18-8 24 0M72 54c8-10 18-8 24 0M100 56c6-8 14-6 18 0" fill="none" stroke="#fff" stroke-opacity=".6" stroke-width="2.500" stroke-linecap="round"/><path d="M110 16l-26 44M118 18L90 62" stroke="#8B5A2B" stroke-width="3" stroke-linecap="round"/>`,
+  dosa:(a,b)=>`<ellipse cx="80" cy="102" rx="62" ry="8" fill="#00000014"/><path d="M14 74Q80 6 146 56L138 68Q80 34 22 86z" fill="${a}" stroke="${b}" stroke-width="3" stroke-linejoin="round"/><path d="M40 66Q80 36 124 52" fill="none" stroke="${b}" stroke-width="3" opacity=".5"/><g stroke="#00000022" stroke-width="2" fill="#fff"><ellipse cx="42" cy="94" rx="16" ry="8"/><ellipse cx="82" cy="94" rx="16" ry="8"/><ellipse cx="122" cy="94" rx="16" ry="8"/></g><ellipse cx="42" cy="92" rx="12" ry="5" fill="#7DB65A"/><ellipse cx="82" cy="92" rx="12" ry="5" fill="#E8A33D"/><ellipse cx="122" cy="92" rx="12" ry="5" fill="#C65A3A"/>`,
+  idli:(a,b)=>`<ellipse cx="72" cy="94" rx="56" ry="10" fill="#fff" stroke="#00000022" stroke-width="2"/><path d="M24 84a20 18 0 0 1 40 0z" fill="${a}" stroke="${b}" stroke-width="2"/><path d="M50 84a20 18 0 0 1 40 0z" fill="${a}" stroke="${b}" stroke-width="2"/><path d="M76 84a20 18 0 0 1 40 0z" fill="${a}" stroke="${b}" stroke-width="2"/><path d="M110 58h38a19 24 0 0 1-38 0z" fill="#fff" stroke="#00000022" stroke-width="2"/><ellipse cx="129" cy="58" rx="19" ry="5" fill="${b}"/>`,
+  thali:(a,b)=>`<ellipse cx="80" cy="62" rx="68" ry="50" fill="#D9DEE2" stroke="#9AA3AB" stroke-width="3"/><ellipse cx="80" cy="62" rx="56" ry="40" fill="#EEF1F3"/><g stroke="#9AA3AB" stroke-width="2"><circle cx="52" cy="46" r="15" fill="${a}"/><circle cx="88" cy="40" r="15" fill="#E8B04B"/><circle cx="116" cy="62" r="14" fill="${b}"/><circle cx="48" cy="78" r="13" fill="#F4F0E6"/><circle cx="88" cy="78" r="15" fill="#FFFDF4"/></g><path d="M78 78h20M80 72h16" stroke="#E5D9B6" stroke-width="2"/>`,
+  sandwich:(a,b)=>`<ellipse cx="80" cy="102" rx="56" ry="7" fill="#00000014"/><path d="M28 88L80 22l52 66z" fill="#F2D9A6" stroke="#C9A25E" stroke-width="3" stroke-linejoin="round"/><path d="M40 80L80 34l40 46z" fill="${a}"/><path d="M50 74L80 44l30 30z" fill="${b}"/><path d="M28 88h104v8H28z" fill="#E3C487" stroke="#C9A25E" stroke-width="3" stroke-linejoin="round"/>`,
+  fries:(a,b)=>`<ellipse cx="80" cy="102" rx="44" ry="6" fill="#00000014"/><g stroke="${a}" stroke-width="8" stroke-linecap="round"><path d="M56 62L50 24"/><path d="M68 60L66 18"/><path d="M80 60V16"/><path d="M92 60l4-42"/><path d="M104 62l8-36"/></g><path d="M46 56h68l-8 44H54z" fill="${b}"/><path d="M58 70h44" stroke="#fff" stroke-opacity=".6" stroke-width="5" stroke-linecap="round"/>`,
+  momo:(a,b)=>`<ellipse cx="80" cy="96" rx="58" ry="10" fill="#fff" stroke="#00000022" stroke-width="2"/><g fill="${a}" stroke="${b}" stroke-width="2.500" stroke-linejoin="round"><path d="M28 88c0-26 20-34 28-34s28 8 28 34z"/><path d="M76 88c0-26 20-34 28-34s28 8 28 34z"/></g><path d="M40 64l6 8M50 58l4 10M88 64l6 8M98 58l4 10" stroke="${b}" stroke-width="2" stroke-linecap="round"/><circle cx="80" cy="38" r="5" fill="#D9482B"/>`,
+  roll:(a,b)=>`<ellipse cx="80" cy="100" rx="56" ry="7" fill="#00000014"/><g stroke="${b}" stroke-width="3"><rect x="24" y="48" width="86" height="26" rx="13" fill="${a}" transform="rotate(-12 67 61)"/><rect x="50" y="66" width="86" height="26" rx="13" fill="${a}" transform="rotate(-6 93 79)"/></g>`
+};
+function art(kind, a, b, tint){
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120"><rect width="160" height="120" fill="${tint}"/>${ART[kind](a,b)}</svg>`;
+  return 'data:image/svg+xml,' + encodeURIComponent(svg);
+}
+
+/* id, category, name, price (Rs), picture kind, colour 1, colour 2, short note */
+const RAW = [
+ ['pkachori','nashta','Pyaaz Kachori',15,'ball','#E3A44A','#A96A1A','Garam kachori, chutney ke saath'],
+ ['mkachori','nashta','Moong Dal Kachori',15,'ball','#DDB05A','#9C6A22','Crispy, moong dal bhari'],
+ ['samosa','nashta','Samosa',12,'tri','#E2A93B','#A96F12','Aloo wala, chutney ke saath'],
+ ['bsamosa','nashta','Baked Samosa',20,'tri','#D9B46A','#9A7430','Kam tel, oven mein baka hua'],
+ ['aloovada','nashta','Aloo Vada',12,'ball','#E5B450','#A5701A','Besan mein tala hua aloo'],
+ ['vadapav','nashta','Vada Pav',15,'ball','#E58B3A','#A5521A','Lasun chutney ke saath'],
+ ['poha','nashta','Indori Poha',20,'bowl','#F0D24A','#6BAA45','Sev, pyaaz aur nimbu ke saath'],
+ ['pohajalebi','nashta','Poha + Jalebi',30,'bowl','#F0D24A','#E88B1C','Indore ka combo'],
+ ['alooparatha','nashta','Aloo Paratha',25,'roti','#E9C27A','#B98A3C','Dahi aur achar ke saath'],
+ ['breadpakoda','nashta','Bread Pakoda',15,'tri','#DDA84A','#9C6A1A','Garam, besan wala'],
+
+ ['chai','chai','Chai',10,'cup','#B97A44','#F4EEE4','Cutting chai'],
+ ['masalachai','chai','Masala Chai',12,'cup','#A8663A','#F4EEE4','Adrak elaichi wali'],
+ ['coffee','chai','Hot Coffee',20,'cup','#5B3A29','#F4EEE4','Garam doodh wali coffee'],
+ ['greentea','chai','Green Tea',15,'cup','#A9B56B','#F4EEE4','Bina doodh, bina cheeni'],
+
+ ['vsandwich','snacks','Veg Sandwich',30,'sandwich','#8DBF4F','#E8573A','Aloo, kheera, tamatar'],
+ ['gsandwich','snacks','Grilled Sandwich',50,'sandwich','#F2C14E','#8DBF4F','Cheese grilled'],
+ ['burger','snacks','Veg Burger',40,'sandwich','#6BAA45','#D9482B','Aloo tikki burger'],
+ ['maggi','snacks','Maggi',30,'noodles','#F2C14E','#EFE0B5','Masala maggi'],
+ ['cmaggi','snacks','Cheese Maggi',45,'noodles','#F5CF5E','#EFE0B5','Upar se cheese'],
+ ['fries','snacks','French Fries',40,'fries','#F1BE42','#D8412F','Peri peri masala'],
+ ['pavbhaji','snacks','Pav Bhaji',60,'bowl','#C8442E','#E8B04B','2 butter pav ke saath'],
+ ['dahibhalla','snacks','Dahi Bhalla',35,'ball','#F4EFE0','#C9B98A','Meethi imli chutney'],
+ ['panipuri','snacks','Pani Puri (6)',25,'ball','#E8B04B','#A5701A','Khatta meetha pani'],
+ ['samosachaat','snacks','Samosa Chaat',30,'tri','#E2A93B','#C23B2A','Chhole, dahi aur chutney'],
+ ['vegroll','snacks','Veg Roll',40,'roll','#E8C27A','#A5701A','Sabji aur sauce bhara'],
+ ['paneerroll','snacks','Paneer Roll',60,'roll','#EDCB86','#A5701A','Paneer tikka roll'],
+ ['chholebhature','snacks','Chhole Bhature',50,'roti','#E9C27A','#B98A3C','2 bhature, chhole, achar'],
+
+ ['sevtamatar','sabji','Sev Tamatar',50,'bowl','#D9481F','#F0C040','Malwa ki famous sabji'],
+ ['pbm','sabji','Paneer Butter Masala',90,'bowl','#E2602F','#F5E3B8','Creamy, halka meetha'],
+ ['shahi','sabji','Shahi Paneer',90,'bowl','#EDA15A','#F5E3B8','Kaju wali gravy'],
+ ['kadhaip','sabji','Kadhai Paneer',90,'bowl','#C8431F','#F2E7C9','Shimla mirch ke saath'],
+ ['palakp','sabji','Palak Paneer',85,'bowl','#4F8A3F','#F2E7C9','Hari palak gravy'],
+ ['matarp','sabji','Matar Paneer',80,'bowl','#D9702F','#F2E7C9','Matar aur paneer'],
+ ['bhurji','sabji','Paneer Bhurji',80,'bowl','#E8B84A','#F7ECC8','Masaledar bhurji'],
+ ['ptm','sabji','Paneer Tikka Masala',95,'bowl','#D4551F','#F2E0B0','Tandoori tikka gravy mein'],
+ ['dalfry','sabji','Dal Fry',50,'bowl','#E3A22A','#8B5A2B','Lasun tadka'],
+ ['dalmakhani','sabji','Dal Makhani',70,'bowl','#7A3B22','#E8B04B','Makhan wali kaali dal'],
+ ['rajma','sabji','Rajma Masala',55,'bowl','#9B2F1E','#C9573A','Punjabi rajma'],
+ ['chhole','sabji','Chhole Masala',50,'bowl','#B7632B','#E8B04B','Amritsari style'],
+ ['aloogobhi','sabji','Aloo Gobhi',50,'bowl','#E8B22C','#F4E4A8','Sukhi sabji'],
+ ['mixveg','sabji','Mix Veg',55,'bowl','#E26B2D','#5E9E3F','Mausam ki sabziyan'],
+ ['kadhi','sabji','Kadhi Pakoda',45,'bowl','#F0D060','#C98A2B','Dahi besan kadhi'],
+ ['bhindi','sabji','Bhindi Masala',55,'bowl','#7DA83F','#E8B04B','Kurkuri bhindi'],
+
+ ['roti','roti','Roti',5,'roti','#E9C98A','#C79A52','Tawa roti'],
+ ['butterroti','roti','Butter Roti',7,'roti','#EBCB84','#C79A52','Makhan lagi'],
+ ['tandoori','roti','Tandoori Roti',8,'roti','#E0B070','#A8742E','Tandoor ki'],
+ ['missi','roti','Missi Roti',10,'roti','#D9A860','#A8742E','Besan aur ajwain'],
+ ['paratha','roti','Plain Paratha',15,'roti','#EBC57A','#B98A3C','Ghee wala'],
+ ['naan','roti','Butter Naan',20,'roti','#F0D49A','#C79A52','Naram naan'],
+ ['garlicnaan','roti','Garlic Naan',25,'roti','#EED28C','#8DBF4F','Lasun dhaniya'],
+ ['plainrice','roti','Plain Rice',30,'rice','#E8E0C8','#F4EEE4','Steam chawal'],
+ ['jeerarice','roti','Jeera Rice',45,'rice','#C9A55A','#E3A22A','Jeere ka tadka'],
+ ['dalchawal','roti','Dal Chawal',60,'rice','#E3A22A','#E3A22A','Dal fry + jeera rice'],
+ ['rajmachawal','roti','Rajma Chawal',65,'rice','#9B2F1E','#9B2F1E','Rajma + steam rice'],
+ ['kadhichawal','roti','Kadhi Chawal',60,'rice','#F0D060','#F0D060','Kadhi + steam rice'],
+ ['pulao','roti','Veg Pulao',55,'rice','#8DBF4F','#F4EEE4','Raita ke saath'],
+ ['biryani','roti','Veg Biryani',70,'rice','#D9902F','#F4EEE4','Raita ke saath'],
+ ['dahi','roti','Dahi',15,'bowl','#FBF8EE','#FBF8EE','Taza dahi'],
+ ['raita','roti','Boondi Raita',25,'bowl','#FBF8EE','#E8B04B','Thanda raita'],
+
+ ['minithali','thali','Mini Thali',70,'thali','#E8B04B','#C23B2A','Sabji, dal, 3 roti, chawal'],
+ ['bigthali','thali','Big Thali',110,'thali','#E2602F','#C23B2A','2 sabji, dal, 4 roti, chawal, raita, meetha'],
+ ['paneerthali','thali','Special Paneer Thali',140,'thali','#EDA15A','#4F8A3F','Paneer sabji, dal, 4 roti, chawal, raita, meetha'],
+
+ ['vnoodles','chinese','Veg Noodles',50,'noodles','#E8B84A','#F2E8CC','Halki mirch'],
+ ['hakka','chinese','Hakka Noodles',55,'noodles','#E3A83C','#F2E8CC','Sabziyon ke saath'],
+ ['schnoodles','chinese','Schezwan Noodles',60,'noodles','#C8442E','#F2E8CC','Teekhe schezwan'],
+ ['friedrice','chinese','Veg Fried Rice',55,'rice','#E9C27A','#F4EEE4','Sabji wale chawal'],
+ ['schrice','chinese','Schezwan Fried Rice',60,'rice','#C8442E','#F4EEE4','Teekha'],
+ ['manchdry','chinese','Veg Manchurian Dry',60,'ball','#7A4421','#4A2810','Crispy balls'],
+ ['manchgravy','chinese','Manchurian Gravy',65,'bowl','#6B3A1E','#3E2410','Noodles ke saath best'],
+ ['chillip','chinese','Chilli Paneer',90,'bowl','#C23B1E','#F2E7C9','Dry ya gravy'],
+ ['springroll','chinese','Spring Roll',40,'roll','#E3A83C','#9C6A1A','2 piece'],
+ ['momos','chinese','Veg Momos (6)',40,'momo','#F4EFE4','#C9B98A','Laal chutney ke saath'],
+ ['fmomos','chinese','Fried Momos (6)',50,'momo','#E3A83C','#A5701A','Crispy fried'],
+ ['honeychilli','chinese','Honey Chilli Potato',70,'fries','#E8A23A','#C23B1E','Meetha teekha'],
+
+ ['idli','south','Idli Sambar (2)',35,'idli','#FBF8EE','#D9702F','Naariyal chutney ke saath'],
+ ['meduvada','south','Medu Vada (2)',40,'ball','#D8A64A','#9C6A1A','Sambar chutney ke saath'],
+ ['dosa','south','Plain Dosa',45,'dosa','#E8B25A','#B87A2C','Sambar chutney ke saath'],
+ ['masaladosa','south','Masala Dosa',60,'dosa','#E3A648','#A5701A','Aloo masala bhara'],
+ ['mysoredosa','south','Mysore Masala Dosa',70,'dosa','#D9822E','#A5521A','Laal chutney lagi'],
+ ['ravadosa','south','Rava Dosa',60,'dosa','#EBC468','#B98A3C','Jaali wala crispy'],
+ ['cheesedosa','south','Cheese Dosa',80,'dosa','#F2D064','#B98A3C','Upar se cheese'],
+ ['uttapam','south','Uttapam',55,'dosa','#E8C27A','#6BAA45','Pyaaz tamatar wala'],
+ ['upma','south','Upma',25,'bowl','#E8D07A','#6BAA45','Sooji upma'],
+ ['curdrice','south','Curd Rice',45,'rice','#F4EEE4','#F4EEE4','Thanda, dahi chawal'],
+
+ ['coldcoffee','cold','Cold Coffee',40,'glass','#B98A6A','#6B4A32','Thanda aur meetha'],
+ ['chaas','cold','Chaas',15,'glass','#F7F2E4','#C9B98A','Jeera masala'],
+ ['lassi','cold','Sweet Lassi',30,'glass','#F7F2E4','#D9B46A','Malaidar'],
+ ['mangolassi','cold','Mango Lassi',40,'glass','#F2B632','#D98A1C','Aam wali'],
+ ['nimbu','cold','Nimbu Pani',15,'glass','#F4E27A','#8DBF4F','Shikanji'],
+ ['jaljeera','cold','Jaljeera',15,'glass','#A9C06A','#6B8A3A','Pudina jeera'],
+ ['colddrink','cold','Cold Drink',20,'glass','#3A2417','#7A4A2A','Coke, Sprite ya Thums Up'],
+ ['water','cold','Water Bottle',20,'glass','#CFE8F2','#7FB3CC','1 litre'],
+ ['milkshake','cold','Chocolate Shake',50,'glass','#6B4226','#3E2410','Thick shake']
+];
+
+const MENU = RAW.map(r => {
+  const cat = CATS.find(c => c.id === r[1]);
+  return {id:r[0], cat:r[1], name:r[2], price:r[3], img:art(r[4], r[5], r[6], cat.tint), note:r[7]};
+});
+const MENU_BY_ID = Object.fromEntries(MENU.map(m => [m.id, m]));
+
+/* ===== STORE: shared database when this page has it, otherwise this browser only ===== */
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const rs = n => '₹' + n;
+const LS = {
+  get(k, d){ try{ const v = localStorage.getItem('cc.' + k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem('cc.' + k, JSON.stringify(v)); }catch(e){} }
+};
+let SESSION = LS.get('session', null);   // {role:'student', mobile, name} or {role:'owner', id}
+const DEFAULT_UPI = 'canteen@upi';
+const S = { mode:'local', db:null, uid:'', admin:false, orders:[], soldOut:{}, photos:{}, photoVer:0, settings:{open:true, upi:DEFAULT_UPI}, err:null };
+const listeners = [];
+const onChange = fn => listeners.push(fn);
+const fire = () => listeners.forEach(f => { try{ f(); }catch(e){ console.error(e); } });
+const withDefaults = o => Object.assign({open:true, upi:DEFAULT_UPI}, o || {});
+
+function loadLocal(){
+  S.orders = LS.get('orders', []);
+  S.soldOut = LS.get('soldOut', {});
+  S.photos = LS.get('photos', {}); S.photoVer++;
+  S.settings = withDefaults(LS.get('settings', {}));
+}
+
+async function initStore(){
+  let db = null, user = null;
+  try{
+    if(window.claude && window.claude.use){
+      db = await window.claude.use('db');
+      user = await window.claude.use('user');
+    }
+  }catch(e){ db = null; }
+  if(!db && window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.apiKey && window.firebase){
+    try{
+      if(!firebase.apps.length) firebase.initializeApp(window.FIREBASE_CONFIG);
+      db = firebase.firestore(); S.firebase = true;
+    }catch(e){ db = null; }
+  }
+  if(db){
+    S.mode = 'db'; S.db = db;
+    try{ S.uid = (user && await user.id()) || ''; }catch(e){}
+    try{ S.admin = !!(user && await user.canEdit()); }catch(e){}
+    db.collection('orders').onSnapshot(
+      snap => { S.orders = snap.docs.map(d => Object.assign({id:d.id}, d.data())); S.err = null; fire(); },
+      err => { S.err = err; fire(); });
+    db.collection('menu').onSnapshot(
+      snap => { const o = {}; snap.docs.forEach(d => { if((d.data() || {}).soldOut) o[d.id] = true; }); S.soldOut = o; fire(); },
+      () => {});
+    db.collection('photos').onSnapshot(
+      snap => { const o = {}; snap.docs.forEach(d => { const v = (d.data() || {}).img; if(v) o[d.id] = v; }); S.photos = o; S.photoVer++; fire(); },
+      () => {});
+    db.doc('settings/shop').onSnapshot(
+      d => { if(d.exists) S.settings = withDefaults(d.data()); fire(); },
+      () => {});
+  } else {
+    S.mode = 'local';
+    loadLocal();
+    window.addEventListener('storage', () => { loadLocal(); fire(); });
+  }
+  S.deviceUid = LS.get('uid', null) || ('g' + Math.random().toString(36).slice(2, 10));
+  LS.set('uid', S.deviceUid);
+  S.uid = (SESSION && SESSION.role === 'student') ? SESSION.mobile : S.deviceUid;
+}
+
+/* ===== accounts (student + owner) ===== */
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const hexOf = b => Array.from(new Uint8Array(b)).map(x => x.toString(16).padStart(2, '0')).join('');
+async function hashPw(pw, saltHex){
+  if(!(window.crypto && crypto.subtle)) throw {u:'Is browser mein password security available nahi hai.'};
+  const salt = saltHex ? Uint8Array.from(saltHex.match(/../g).map(h => parseInt(h, 16))) : crypto.getRandomValues(new Uint8Array(16));
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits({name:'PBKDF2', salt, iterations:100000, hash:'SHA-256'}, key, 256);
+  return {salt:hexOf(salt), hash:hexOf(bits)};
+}
+async function verifyPw(pw, acc){
+  if(!acc || !acc.salt || !acc.hash) return false;
+  const h = await hashPw(pw, acc.salt);
+  return h.hash === acc.hash;
+}
+async function getAccount(key){
+  if(S.mode === 'db'){ const s = await S.db.doc('accounts/' + key).get(); return s.exists ? s.data() : null; }
+  return LS.get('accounts', {})[key] || null;
+}
+async function putAccount(key, data){
+  if(S.mode === 'db'){ await S.db.doc('accounts/' + key).set(data); }
+  else { const a = LS.get('accounts', {}); a[key] = data; LS.set('accounts', a); }
+}
+
+async function putOrder(o){
+  if(S.mode === 'db'){ await S.db.doc('orders/' + o.id).set(o); }
+  else { const a = LS.get('orders', []); a.push(o); LS.set('orders', a); loadLocal(); fire(); }
+}
+async function patchOrder(id, patch){
+  if(S.mode === 'db'){ await S.db.doc('orders/' + id).update(patch); }
+  else {
+    const a = LS.get('orders', []); const i = a.findIndex(x => x.id === id);
+    if(i >= 0) a[i] = Object.assign({}, a[i], patch);
+    LS.set('orders', a); loadLocal(); fire();
+  }
+}
+async function dropOrders(ids){
+  if(S.mode === 'db'){ for(const id of ids){ await S.db.doc('orders/' + id).delete(); } }
+  else { LS.set('orders', LS.get('orders', []).filter(x => !ids.includes(x.id))); loadLocal(); fire(); }
+}
+async function putSoldOut(id, v){
+  if(S.mode === 'db'){ await S.db.doc('menu/' + id).set({soldOut:v}); }
+  else { const o = LS.get('soldOut', {}); if(v) o[id] = true; else delete o[id]; LS.set('soldOut', o); loadLocal(); fire(); }
+}
+async function putPhoto(id, img){
+  if(S.mode === 'db'){ await S.db.doc('photos/' + id).set({img}); }
+  else {
+    const p = LS.get('photos', {}); p[id] = img; LS.set('photos', p);
+    if(LS.get('photos', {})[id] !== img) throw new Error('storage full');
+    loadLocal(); fire();
+  }
+}
+async function delPhoto(id){
+  if(S.mode === 'db'){ await S.db.doc('photos/' + id).delete(); }
+  else { const p = LS.get('photos', {}); delete p[id]; LS.set('photos', p); loadLocal(); fire(); }
+}
+const imgOf = m => S.photos[m.id] || m.img;
+const norm = s => String(s).toLowerCase().replace(/\.[a-z0-9]{2,4}$/, '').replace(/[^a-z0-9]/g, '');
+function matchItem(fname){
+  const n = norm(fname);
+  const hit = MENU.find(m => norm(m.id) === n) || MENU.find(m => norm(m.name) === n);
+  if(hit) return hit;
+  return MENU.filter(m => n.length > 3 && n.includes(norm(m.name))).sort((a, b) => norm(b.name).length - norm(a.name).length)[0];
+}
+function fileToJpeg(file, w, h){
+  w = w || 320; h = h || 240;
+  return new Promise((res, rej) => {
+    const url = URL.createObjectURL(file), im = new Image();
+    im.onload = () => {
+      const c = document.createElement('canvas'); c.width = w; c.height = h;
+      const x = c.getContext('2d'), r = Math.max(w / im.width, h / im.height), sw = w / r, sh = h / r;
+      x.drawImage(im, (im.width - sw) / 2, (im.height - sh) / 2, sw, sh, 0, 0, w, h);
+      URL.revokeObjectURL(url); res(c.toDataURL('image/jpeg', .68));
+    };
+    im.onerror = () => { URL.revokeObjectURL(url); rej(new Error('bad image')); };
+    im.src = url;
+  });
+}
+async function putSettings(p){
+  const next = Object.assign({}, S.settings, p);
+  if(S.mode === 'db'){ await S.db.doc('settings/shop').set(next); }
+  else { LS.set('settings', next); loadLocal(); fire(); }
+}
+
+/* ===== small helpers ===== */
+const dayKey = ms => { const d = new Date(ms); return d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate(); };
+const todays = () => S.orders.filter(o => dayKey(o.createdAt) === dayKey(Date.now()));
+const nextToken = () => String(todays().length + 1).padStart(3, '0');
+const ago = ms => { const m = Math.max(0, Math.round((Date.now() - ms) / 60000)); return m < 1 ? 'abhi' : m < 60 ? m + ' min pehle' : Math.floor(m / 60) + ' ghante pehle'; };
+const STATUS = {new:'Naya order', cooking:'Ban raha hai', ready:'Ready hai', done:'Mil gaya', cancelled:'Cancel'};
+const SLOT = {asap:'Jaldi se jaldi', m10:'10 min mein', m20:'20 min mein', brk:'Break time mein'};
+
+/* ===== STUDENT SIDE: menu, cart, checkout, my orders ===== */
+const UI = { tab:'menu', cat:'all', q:'', cart:LS.get('cart', {}), ot:'orders', of:'new', stockQ:'', pending:'', sheet:'', menuSig:'' };
+const form = Object.assign({name:'', place:'', phone:'', slot:'asap', pay:'cod', note:'', utr:''}, LS.get('form', {}));
+form.slot = 'asap'; form.pay = 'cod'; form.note = ''; form.utr = '';
+
+let toastTimer = 0;
+function toast(msg){
+  const t = $('#toast'); t.textContent = msg; t.hidden = false;
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 3200);
+}
+
+/* menu */
+function renderChips(){
+  $('#chips').innerHTML = [{id:'all', label:'Sab'}].concat(CATS).map(c =>
+    `<button class="chip" data-cat="${c.id}" aria-pressed="${UI.cat === c.id}">${esc(c.label)}</button>`).join('');
+}
+function cardHTML(m){
+  const q = UI.cart[m.id] || 0, out = !!S.soldOut[m.id];
+  const ctl = out ? '<span class="meta">Khatam</span>'
+    : q ? `<div class="step"><button data-dec="${m.id}" aria-label="Kam karein: ${esc(m.name)}">−</button><b>${q}</b><button data-inc="${m.id}" aria-label="Badhayein: ${esc(m.name)}">+</button></div>`
+    : `<button class="add" data-inc="${m.id}" aria-label="Add: ${esc(m.name)}">Add</button>`;
+  return `<article class="card${out ? ' soldout' : ''}" data-card="${m.id}"><img src="${imgOf(m)}" alt="${esc(m.name)}" width="160" height="120" loading="lazy">${out ? '<span class="tag">Khatam</span>' : ''}<div class="body"><div class="nm">${esc(m.name)}</div><div class="ds">${esc(m.note)}</div><div class="row"><span class="price">${rs(m.price)}</span>${ctl}</div></div></article>`;
+}
+function renderMenu(){
+  const q = UI.q.trim().toLowerCase();
+  const items = MENU.filter(m => (UI.cat === 'all' || m.cat === UI.cat) && (!q || (m.name + ' ' + m.note).toLowerCase().includes(q)));
+  const el = $('#menuList');
+  if(!items.length){ el.innerHTML = '<div class="empty">Koi item nahi mila. Kuch aur dhundhein.</div>'; return; }
+  el.innerHTML = CATS.filter(c => items.some(m => m.cat === c.id)).map(c =>
+    `<section class="sec"><h2>${esc(c.label)}</h2><div class="grid">${items.filter(m => m.cat === c.id).map(cardHTML).join('')}</div></section>`).join('');
+}
+function updateCard(id){
+  const el = document.querySelector('[data-card="' + id + '"]');
+  if(el) el.outerHTML = cardHTML(MENU_BY_ID[id]);
+}
+
+/* cart */
+const cartItems = () => Object.keys(UI.cart).filter(id => MENU_BY_ID[id] && UI.cart[id] > 0).map(id => ({m:MENU_BY_ID[id], q:UI.cart[id]}));
+const cartTotal = () => cartItems().reduce((s, x) => s + x.m.price * x.q, 0);
+const cartCount = () => cartItems().reduce((s, x) => s + x.q, 0);
+function setQty(id, q){
+  if(q <= 0) delete UI.cart[id]; else UI.cart[id] = Math.min(q, 20);
+  LS.set('cart', UI.cart);
+  updateCard(id); renderCartBar();
+  if(UI.sheet === 'checkout') renderLines();
+}
+function renderCartBar(){
+  const n = cartCount();
+  $('#cartbar').hidden = !n || UI.tab !== 'menu' || !!UI.sheet;
+  $('#cartTxt').textContent = n + (n === 1 ? ' item' : ' items') + ' · Order karein';
+  $('#cartAmt').textContent = rs(cartTotal());
+}
+
+/* checkout sheet */
+function openSheet(html, mode){
+  UI.sheet = mode; $('#sheet').innerHTML = html; $('#scrim').hidden = false; renderCartBar();
+}
+function closeSheet(){
+  UI.sheet = ''; $('#scrim').hidden = true; renderCartBar();
+}
+function openCheckout(){
+  if(!cartCount()) return;
+  if(!(SESSION && SESSION.role === 'student')){
+    UI.pending = 'checkout';
+    return openLogin('student', 'login', 'Order karne ke liye pehle student login karein.');
+  }
+  form.phone = SESSION.mobile; if(!form.name) form.name = SESSION.name || '';
+  const seg = (name, opts, cur) => opts.map(o => `<button type="button" data-${name}="${o[0]}" aria-pressed="${cur === o[0]}">${o[1]}</button>`).join('');
+  openSheet(`
+    <h2>Aapka order <button class="x" data-act="close" aria-label="Band karein">×</button></h2>
+    <div class="lines" id="lines"></div>
+    <div class="tot"><span>Total</span><span id="ttl"></span></div>
+    <div class="two">
+      <div class="fld"><label for="fName">Aapka naam</label><input id="fName" autocomplete="name" value="${esc(form.name)}"></div>
+      <div class="fld"><label for="fPhone">Mobile number</label><input id="fPhone" inputmode="numeric" maxlength="10" autocomplete="tel-national" placeholder="10 digit" value="${esc(form.phone)}"></div>
+    </div>
+    <div class="fld"><label for="fPlace">Class / Room / Seat</label><input id="fPlace" placeholder="Jaise: BCA 2nd year, Room 204, 3rd bench" value="${esc(form.place)}"></div>
+    <div class="fld"><span class="lbl">Kab chahiye</span><div class="seg" id="slotSeg">${seg('slot', [['asap','Jaldi se jaldi'],['m10','10 min mein'],['m20','20 min mein'],['brk','Break time mein']], form.slot)}</div></div>
+    <div class="fld"><label for="fNote">Koi note (optional)</label><input id="fNote" placeholder="Kam teekha, extra chutney..." value="${esc(form.note)}"></div>
+    <span class="lbl">Payment kaise karenge</span>
+    <div class="pay" id="paySeg" style="margin-top:6px">
+      <button type="button" data-pay="cod" aria-pressed="${form.pay === 'cod'}"><b>Cash on Delivery</b><span>Order milne par counter pe dein</span></button>
+      <button type="button" data-pay="online" aria-pressed="${form.pay === 'online'}"><b>Online (UPI)</b><span>Abhi scan karke ya UPI ID par bhejein</span></button>
+    </div>
+    <div class="upi" id="upiBox" hidden></div>
+    <div class="fld" id="utrFld" hidden><label for="fUtr">UPI transaction ID (UTR)</label><input id="fUtr" inputmode="numeric" placeholder="Payment ke baad 12 digit ka number" value="${esc(form.utr)}"></div>
+    <div class="err" id="err" role="alert"></div>
+    <button class="btn" id="placeBtn" data-act="place">Order place karein</button>`, 'checkout');
+  renderLines(); renderPayBox();
+}
+function renderLines(){
+  const its = cartItems();
+  if(!its.length){ closeSheet(); return; }
+  $('#lines').innerHTML = its.map(x => `<div class="line"><div class="l"><b>${esc(x.m.name)}</b><span>${rs(x.m.price)} each</span></div><div class="step"><button data-dec="${x.m.id}" aria-label="Kam karein: ${esc(x.m.name)}">−</button><b>${x.q}</b><button data-inc="${x.m.id}" aria-label="Badhayein: ${esc(x.m.name)}">+</button></div><b style="min-width:52px;text-align:right">${rs(x.m.price * x.q)}</b></div>`).join('');
+  $('#ttl').textContent = rs(cartTotal());
+  if(form.pay === 'online') renderPayBox();
+}
+function renderPayBox(){
+  const on = form.pay === 'online';
+  $('#utrFld').hidden = !on; $('#upiBox').hidden = !on;
+  if(!on) return;
+  const upi = S.settings.upi || '', amt = cartTotal();
+  const demo = upi === DEFAULT_UPI ? '<span class="meta">Yeh demo UPI ID hai. Owner apni asli ID Settings mein daalega.</span>' : '';
+  $('#upiBox').innerHTML = `<div class="qr" id="qr"></div><div class="info"><span class="lbl">UPI ID</span><span class="mono" id="upiTxt">${esc(upi)}</span><span><b>${rs(amt)}</b> bhejein</span><button type="button" class="btn sm alt" data-act="copy" style="align-self:flex-start">UPI ID copy karein</button>${demo}</div>`;
+  try{
+    if(window.QRCode && upi){
+      new QRCode($('#qr'), {text:'upi://pay?pa=' + encodeURIComponent(upi) + '&pn=Canteen&am=' + amt + '&cu=INR&tn=Canteen%20order', width:124, height:124});
+    } else { $('#qr').hidden = true; }
+  }catch(e){ $('#qr').hidden = true; }
+}
+async function placeOrder(){
+  const err = $('#err'), btn = $('#placeBtn'); err.textContent = '';
+  if(!S.settings.open){ err.textContent = 'Canteen abhi band hai. Khulne par order kar sakenge.'; return; }
+  const all = cartItems(), items = all.filter(x => !S.soldOut[x.m.id]);
+  if(items.length !== all.length){
+    all.filter(x => S.soldOut[x.m.id]).forEach(x => delete UI.cart[x.m.id]);
+    LS.set('cart', UI.cart); renderLines(); renderMenu(); renderCartBar();
+    err.textContent = 'Kuch items khatam ho gaye the, unhe cart se hata diya. Total check karein.'; return;
+  }
+  if(!(SESSION && SESSION.role === 'student')){ err.textContent = 'Pehle student login karein.'; return; }
+  const name = form.name.trim(), place = form.place.trim(), phone = form.phone.replace(/\D/g, '');
+  if(!name){ err.textContent = 'Apna naam likhein.'; $('#fName').focus(); return; }
+  if(phone.length !== 10){ err.textContent = 'Mobile number 10 digit ka hona chahiye.'; $('#fPhone').focus(); return; }
+  if(!place){ err.textContent = 'Class, room ya seat batayein taaki order wahin pahunch sake.'; $('#fPlace').focus(); return; }
+  if(form.pay === 'online' && form.utr.trim().length < 6){ err.textContent = 'Payment karke UPI transaction ID (UTR) daalein.'; $('#fUtr').focus(); return; }
+  const o = {
+    id:'o' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), token:nextToken(), uid:S.uid,
+    name, place, phone, slot:form.slot, note:form.note.trim(), pay:form.pay, utr:form.pay === 'online' ? form.utr.trim() : '',
+    paid:false, status:'new', total:cartTotal(), createdAt:Date.now(),
+    items:items.map(x => ({id:x.m.id, name:x.m.name, price:x.m.price, qty:x.q}))
+  };
+  btn.disabled = true; btn.textContent = 'Order bhej rahe hain...';
+  try{ await putOrder(o); }
+  catch(e){ err.textContent = 'Order save nahi hua. Internet check karke dobara try karein.'; btn.disabled = false; btn.textContent = 'Order place karein'; return; }
+  LS.set('form', {name, place, phone});
+  UI.cart = {}; LS.set('cart', {}); renderMenu();
+  const msg = o.pay === 'cod' ? `Order milne par <b>${rs(o.total)}</b> counter pe dein (cash ya UPI).` : 'Owner aapka UTR check karke payment confirm karega.';
+  openSheet(`<div class="done"><span class="lbl">Aapka token</span><div class="token">#${esc(o.token)}</div><p style="margin:0 0 6px"><b>Order mil gaya.</b> Ban jaane par Mere Orders mein "Ready hai" dikhega.</p><p class="meta" style="margin:0 0 16px">${msg}</p><button class="btn" data-act="myorders">Mere Orders dekhein</button><button class="btn alt" style="margin-top:8px" data-act="close">Aur order karein</button></div>`, 'done');
+}
+
+/* my orders */
+const seenStatus = {};
+let seenInit = false;
+function payTagFor(o){
+  if(o.status === 'cancelled') return '';
+  if(o.paid) return '<span class="paytag paid">Payment mil gaya</span>';
+  return o.pay === 'online' ? '<span class="paytag due">Owner payment check kar raha hai</span>' : '<span class="paytag due">Counter pe dena hai</span>';
+}
+function myOrderCard(o){
+  return `<article class="ord ${o.status === 'ready' ? 'ready' : ''}">
+    <header><span class="tk">#${esc(o.token)}</span><span class="st ${o.status}">${STATUS[o.status] || o.status}</span></header>
+    ${o.status === 'ready' ? `<div style="color:var(--good);font-weight:700">Token #${esc(o.token)} ready hai. Counter se le lein ya aapki jagah par aa raha hai.</div>` : ''}
+    <ul>${(o.items || []).map(i => `<li><span>${i.qty} × ${esc(i.name)}</span><span>${rs(i.price * i.qty)}</span></li>`).join('')}</ul>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b>Total ${rs(o.total)}</b>${payTagFor(o)}</div>
+    <div class="meta">${esc(o.place)} · ${SLOT[o.slot] || ''} · ${ago(o.createdAt)}</div>
+    ${o.status === 'new' ? `<div class="acts"><button class="btn sm bad" data-act="mycancel" data-id="${o.id}">Order cancel karein</button></div>` : ''}
+  </article>`;
+}
+function renderMyOrders(){
+  if(!(SESSION && SESSION.role === 'student')){
+    $('#myOrders').innerHTML = '<div class="empty">Apne orders dekhne ke liye student login karein.<br><button class="btn sm" data-act="openLogin" style="margin-top:14px">Student login</button></div>';
+    return;
+  }
+  const mine = S.orders.filter(o => o.uid === S.uid).sort((a, b) => b.createdAt - a.createdAt);
+  mine.forEach(o => {
+    if(seenInit && seenStatus[o.id] && seenStatus[o.id] !== o.status && o.status === 'ready') toast('Token #' + o.token + ' ready hai!');
+    seenStatus[o.id] = o.status;
+  });
+  seenInit = true;
+  $('#myOrders').innerHTML = mine.length
+    ? `<div class="olist">${mine.map(myOrderCard).join('')}</div>`
+    : '<div class="empty">Abhi koi order nahi. Menu se kuch chunein aur class se hi order kar dein.</div>';
+}
+
+/* ===== LOGIN WINDOWS: student + owner ===== */
+let LG = {role:'student', mode:'login', note:''};
+
+function renderAuthBtn(){
+  const b = $('#authBtn');
+  if(!SESSION){ b.textContent = 'Login'; b.dataset.act = 'openLogin'; return; }
+  const nm = SESSION.role === 'owner' ? 'Owner' : String(SESSION.name || 'Student').split(' ')[0];
+  b.textContent = nm + ' · Logout'; b.dataset.act = 'logout';
+}
+function startSession(s){
+  SESSION = s; LS.set('session', s);
+  S.uid = s.role === 'student' ? s.mobile : S.deviceUid;
+}
+function logout(){
+  SESSION = null; LS.set('session', null); S.uid = S.deviceUid;
+  UI.ot = 'orders'; renderAuthBtn(); showTab('menu'); toast('Logout ho gaya');
+}
+
+async function openLogin(role, mode, note){
+  LG = {role:role || 'student', mode:mode || 'login', note:note || ''};
+  let acc = null, accErr = false;
+  if(LG.role === 'owner'){ try{ acc = await getAccount('owner'); }catch(e){ accErr = true; } }
+  const isOwner = LG.role === 'owner';
+  const tabs = `<div class="seg" role="group" aria-label="Login type" style="margin-bottom:14px"><button type="button" data-lrole="student" aria-pressed="${!isOwner}">Student</button><button type="button" data-lrole="owner" aria-pressed="${isOwner}">Owner</button></div>`;
+  let body = '';
+  if(!isOwner && LG.mode === 'login'){
+    body = `<form id="loginForm" data-kind="slogin" novalidate>
+      <div class="fld"><label for="lMobile">Mobile number</label><input id="lMobile" inputmode="numeric" maxlength="10" autocomplete="username" placeholder="10 digit"></div>
+      <div class="fld"><label for="lPass">Password</label><input id="lPass" type="password" autocomplete="current-password"></div>
+      <div class="err" id="lErr" role="alert"></div>
+      <button class="btn" type="submit">Login karein</button></form>
+      <p class="meta" style="margin-top:12px">Naye ho? <button type="button" class="linkbtn" data-lmode="register">Account banayein</button></p>`;
+  } else if(!isOwner){
+    body = `<form id="loginForm" data-kind="sreg" novalidate>
+      <div class="fld"><label for="lName">Aapka naam</label><input id="lName" autocomplete="name"></div>
+      <div class="fld"><label for="lMobile">Mobile number</label><input id="lMobile" inputmode="numeric" maxlength="10" autocomplete="username" placeholder="10 digit"></div>
+      <div class="two"><div class="fld"><label for="lPass">Password (4+ akshar)</label><input id="lPass" type="password" autocomplete="new-password"></div>
+      <div class="fld"><label for="lPass2">Dobara likhein</label><input id="lPass2" type="password" autocomplete="new-password"></div></div>
+      <div class="err" id="lErr" role="alert"></div>
+      <button class="btn" type="submit">Account banayein</button></form>
+      <p class="meta" style="margin-top:12px">Account hai? <button type="button" class="linkbtn" data-lmode="login">Login karein</button></p>`;
+  } else if(accErr){
+    body = '<div class="err" role="alert">Owner account check nahi ho paya. Internet check karke dobara kholein.</div>';
+  } else if(!acc){
+    const canSet = S.mode !== 'db' || S.admin;
+    body = canSet ? `<p class="meta" style="margin:0 0 12px">Pehli baar: owner account banayein. Yeh ID aur password yaad rakhein.</p>
+      <form id="loginForm" data-kind="oset" novalidate>
+      <div class="fld"><label for="lOwner">Owner ID</label><input id="lOwner" autocomplete="username" value="owner"></div>
+      <div class="two"><div class="fld"><label for="lPass">Password (6+ akshar)</label><input id="lPass" type="password" autocomplete="new-password"></div>
+      <div class="fld"><label for="lPass2">Dobara likhein</label><input id="lPass2" type="password" autocomplete="new-password"></div></div>
+      <div class="err" id="lErr" role="alert"></div>
+      <button class="btn" type="submit">Owner account banayein</button></form>`
+      : '<p class="meta">Owner account abhi bana nahi hai. Canteen owner ko apne claude.ai account se is page ko kholkar pehle account banana hoga.</p>';
+  } else {
+    body = `<form id="loginForm" data-kind="ologin" novalidate>
+      <div class="fld"><label for="lOwner">Owner ID</label><input id="lOwner" autocomplete="username"></div>
+      <div class="fld"><label for="lPass">Password</label><input id="lPass" type="password" autocomplete="current-password"></div>
+      <div class="err" id="lErr" role="alert"></div>
+      <button class="btn" type="submit">Owner login</button></form>`;
+  }
+  openSheet(`<h2>${isOwner ? 'Owner login' : LG.mode === 'register' ? 'Naya student account' : 'Student login'} <button class="x" data-act="close" aria-label="Band karein">×</button></h2>
+    ${LG.note ? `<p class="meta" style="margin:0 0 12px;color:var(--ink)">${esc(LG.note)}</p>` : ''}${tabs}${body}
+    ${!SESSION && !isOwner ? '<p class="meta" style="margin-top:8px"><button type="button" class="linkbtn" data-act="close">Bina login ke menu dekhein</button></p>' : ''}`, 'login');
+  const first = $('#lMobile') || $('#lOwner') || $('#lName'); if(first && !first.value) first.focus();
+}
+
+async function handleLogin(kind){
+  const val = id => (($('#' + id) || {}).value || '');
+  const err = $('#lErr'), btn = $('#loginForm button[type="submit"]');
+  err.textContent = ''; btn.disabled = true;
+  try{
+    if(kind === 'slogin'){
+      const m = val('lMobile').replace(/\D/g, ''), pw = val('lPass');
+      if(m.length !== 10) throw {u:'Mobile number 10 digit ka hona chahiye.'};
+      const acc = await getAccount('s' + m);
+      if(!acc || !(await verifyPw(pw, acc))){ await sleep(700); throw {u:'Mobile number ya password galat hai.'}; }
+      startSession({role:'student', mobile:m, name:acc.name});
+    } else if(kind === 'sreg'){
+      const name = val('lName').trim(), m = val('lMobile').replace(/\D/g, ''), pw = val('lPass');
+      if(name.length < 2) throw {u:'Apna naam likhein.'};
+      if(m.length !== 10) throw {u:'Mobile number 10 digit ka hona chahiye.'};
+      if(pw.length < 4) throw {u:'Password kam se kam 4 akshar ka rakhein.'};
+      if(pw !== val('lPass2')) throw {u:'Dono password same nahi hain.'};
+      if(await getAccount('s' + m)) throw {u:'Is number se account pehle se hai. Login karein.'};
+      const h = await hashPw(pw);
+      await putAccount('s' + m, {name, mobile:m, salt:h.salt, hash:h.hash, createdAt:Date.now()});
+      startSession({role:'student', mobile:m, name});
+    } else if(kind === 'oset'){
+      const id = val('lOwner').trim().toLowerCase(), pw = val('lPass');
+      if(id.length < 3) throw {u:'Owner ID kam se kam 3 akshar ki rakhein.'};
+      if(pw.length < 6) throw {u:'Password kam se kam 6 akshar ka rakhein.'};
+      if(pw !== val('lPass2')) throw {u:'Dono password same nahi hain.'};
+      const h = await hashPw(pw);
+      await putAccount('owner', {id, salt:h.salt, hash:h.hash, createdAt:Date.now()});
+      startSession({role:'owner', id});
+    } else if(kind === 'ologin'){
+      const id = val('lOwner').trim().toLowerCase(), acc = await getAccount('owner');
+      if(!acc || acc.id !== id || !(await verifyPw(val('lPass'), acc))){ await sleep(700); throw {u:'Owner ID ya password galat hai.'}; }
+      startSession({role:'owner', id});
+    }
+  }catch(e){
+    err.textContent = e && e.u ? e.u : 'Kaam nahi hua. Internet check karke dobara try karein.';
+    btn.disabled = false; return;
+  }
+  closeSheet(); renderAuthBtn(); toast('Login ho gaya');
+  if(SESSION.role === 'owner'){ lastNew = -1; showTab('owner'); }
+  else { renderAll(); if(UI.pending === 'checkout'){ UI.pending = ''; openCheckout(); } }
+}
+
+async function savePassword(){
+  const a = $('#newPw').value, b = $('#newPw2').value, msg = $('#pwMsg');
+  if(a.length < 6){ msg.textContent = 'Password kam se kam 6 akshar ka rakhein.'; return; }
+  if(a !== b){ msg.textContent = 'Dono password same nahi hain.'; return; }
+  const h = await hashPw(a);
+  await putAccount('owner', {id:SESSION.id, salt:h.salt, hash:h.hash, createdAt:Date.now()});
+  $('#newPw').value = ''; $('#newPw2').value = ''; msg.textContent = 'Naya password save ho gaya.';
+}
+
+/* ===== OWNER SIDE ===== */
+const ownerAllowed = () => !!(SESSION && SESSION.role === 'owner');
+let lastNew = -1, clearArmed = false;
+
+function beep(){
+  try{
+    const A = window.AudioContext || window.webkitAudioContext; if(!A) return;
+    const c = new A(), o = c.createOscillator(), g = c.createGain();
+    o.connect(g); g.connect(c.destination); o.frequency.value = 880; g.gain.value = .08; o.start();
+    setTimeout(() => { o.stop(); c.close(); }, 200);
+  }catch(e){}
+}
+function ownerCard(o){
+  const next = {new:['cooking', 'Banana shuru karein'], cooking:['ready', 'Ready hai'], ready:['done', 'Mil gaya']}[o.status];
+  const payLine = o.pay === 'online' ? `Online (UPI) · UTR <span class="mono">${esc(o.utr || '-')}</span>` : 'Cash on Delivery';
+  return `<article class="ord ${o.status === 'ready' ? 'ready' : ''}">
+    <header><span class="tk">#${esc(o.token)}</span><span class="st ${o.status}">${STATUS[o.status] || o.status}</span></header>
+    <div><b>${esc(o.name)}</b><div class="meta">${esc(o.place)} · <span class="mono">${esc(o.phone)}</span></div><div class="meta">${SLOT[o.slot] || ''} · ${ago(o.createdAt)}</div></div>
+    <ul>${(o.items || []).map(i => `<li><span>${i.qty} × ${esc(i.name)}</span><span>${rs(i.price * i.qty)}</span></li>`).join('')}</ul>
+    ${o.note ? `<div class="meta">Note: ${esc(o.note)}</div>` : ''}
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b>Total ${rs(o.total)}</b><span class="paytag ${o.paid ? 'paid' : 'due'}">${o.paid ? 'Payment mila' : 'Payment baaki'}</span></div>
+    <div class="meta">${payLine}</div>
+    <div class="acts">
+      ${next ? `<button class="btn sm" data-act="adv" data-id="${o.id}" data-to="${next[0]}">${next[1]}</button>` : ''}
+      ${!o.paid && o.status !== 'cancelled' ? `<button class="btn sm alt" data-act="paid" data-id="${o.id}">Payment mila</button>` : ''}
+      ${o.status === 'new' || o.status === 'cooking' ? `<button class="btn sm bad" data-act="cancel" data-id="${o.id}">Cancel</button>` : ''}
+    </div></article>`;
+}
+function renderOwner(){
+  const ok = ownerAllowed();
+  $('#ownerBody').hidden = !ok;
+  $('#ownerLock').innerHTML = ok ? '' : '<div class="panel lock"><h3>Sirf canteen owner ke liye</h3><p class="meta">Orders aur menu manage karne ke liye owner login karein.</p><button class="btn" data-act="openOwnerLogin">Owner login</button></div>';
+  if(!ok) return;
+
+  const td = todays(), live = td.filter(o => o.status !== 'cancelled');
+  const cnt = s => S.orders.filter(o => o.status === s).length;
+  $('#oStats').innerHTML = [
+    [td.length, 'Aaj ke orders'], [cnt('new'), 'Naye orders'], [rs(live.reduce((s, o) => s + o.total, 0)), 'Aaj ki bikri'],
+    [rs(live.filter(o => !o.paid).reduce((s, o) => s + o.total, 0)), 'Payment baaki']
+  ].map(x => `<div class="stat"><b>${x[0]}</b><span>${x[1]}</span></div>`).join('');
+
+  $('#oTabs').querySelectorAll('[data-ot]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.ot === UI.ot)));
+  $('#oOrders').hidden = UI.ot !== 'orders'; $('#oStock').hidden = UI.ot !== 'stock'; $('#oSettings').hidden = UI.ot !== 'settings';
+
+  if(UI.ot === 'orders'){
+    $('#oFilter').innerHTML = ['new', 'cooking', 'ready', 'done', 'cancelled'].map(s =>
+      `<button class="chip" data-of="${s}" aria-pressed="${UI.of === s}">${STATUS[s]} (${cnt(s)})</button>`).join('');
+    const list = S.orders.filter(o => o.status === UI.of).sort((a, b) => UI.of === 'done' || UI.of === 'cancelled' ? b.createdAt - a.createdAt : a.createdAt - b.createdAt);
+    $('#oList').innerHTML = list.length ? list.map(ownerCard).join('') : '<div class="empty" style="grid-column:1/-1">Is status mein koi order nahi.</div>';
+  }
+  if(UI.ot === 'stock'){
+    const q = UI.stockQ.trim().toLowerCase();
+    $('#stockList').innerHTML = MENU.filter(m => !q || m.name.toLowerCase().includes(q)).map(m => {
+      const out = !!S.soldOut[m.id];
+      const has = !!S.photos[m.id];
+      return `<div class="stk"><img src="${imgOf(m)}" alt="" width="64" height="48"><div class="n">${esc(m.name)}<div class="meta">${rs(m.price)} · ${has ? 'Asli photo' : 'Drawn picture'}</div><div class="acts" style="margin-top:6px"><button class="btn sm ${out ? 'bad' : 'alt'}" data-act="stock" data-id="${m.id}" aria-pressed="${out}">${out ? 'Khatam' : 'Available'}</button><label class="btn sm alt" style="cursor:pointer">Photo<input type="file" accept="image/*" hidden data-photo="${m.id}"></label>${has ? `<button class="btn sm alt" data-act="delphoto" data-id="${m.id}">Photo hatao</button>` : ''}</div></div></div>`;
+    }).join('');
+  }
+  if(UI.ot === 'settings'){
+    $('#openBtn').setAttribute('aria-pressed', String(!!S.settings.open));
+    $('#closeBtn').setAttribute('aria-pressed', String(!S.settings.open));
+    const u = $('#upiId'); if(document.activeElement !== u) u.value = S.settings.upi || '';
+  }
+}
+
+/* ===== page-level render ===== */
+function setHH(){ document.documentElement.style.setProperty('--hh', document.querySelector('.top').offsetHeight + 'px'); }
+function showTab(t){
+  UI.tab = t;
+  document.querySelectorAll('.tab').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === t)));
+  ['menu', 'orders', 'owner'].forEach(n => { $('#v-' + n).hidden = n !== t; });
+  renderCartBar(); renderAll(); window.scrollTo(0, 0);
+  if(t === 'owner' && !ownerAllowed() && !UI.sheet) openLogin('owner');
+}
+function renderAll(){
+  const open = !!S.settings.open;
+  $('#openPill').classList.toggle('off', !open); $('#openTxt').textContent = open ? 'Khula hai' : 'Band hai';
+  const bar = $('#modeNote'), inner = bar.firstElementChild;
+  let msg = '', bad = false;
+  if(S.err){ msg = 'Live connection mein dikkat aayi. Page refresh karke dekhein.'; bad = true; }
+  else if(!open){ msg = 'Canteen abhi band hai. Khulne par order kar sakenge.'; bad = true; }
+  else if(S.mode === 'local'){
+    msg = window.STANDALONE_BUILD
+      ? 'Demo mode: orders sirf is browser mein save ho rahe hain. Sabke liye live karne ke liye firebase-config.js mein Firebase config daalein.'
+      : 'Demo mode: orders sirf is browser mein save ho rahe hain. Sabke liye live karne ke liye is page ko claude.ai par share karein.';
+  }
+  bar.hidden = !msg; bar.classList.toggle('bad', bad); inner.textContent = msg;
+  setHH(); renderAuthBtn();
+
+  let changed = false;
+  Object.keys(UI.cart).forEach(id => { if(S.soldOut[id]){ delete UI.cart[id]; changed = true; } });
+  if(changed) LS.set('cart', UI.cart);
+  const sig = JSON.stringify(S.soldOut) + '|' + S.photoVer;
+  if(sig !== UI.menuSig || changed){ UI.menuSig = sig; renderMenu(); }
+  renderCartBar();
+
+  renderMyOrders();
+  const isStu = !!(SESSION && SESSION.role === 'student');
+  const active = isStu ? S.orders.filter(o => o.uid === S.uid && ['new', 'cooking', 'ready'].includes(o.status)).length : 0;
+  const b1 = $('#bOrders'); b1.hidden = !active; b1.textContent = active;
+  const nNew = S.orders.filter(o => o.status === 'new').length;
+  const b2 = $('#bOwner'); b2.hidden = !ownerAllowed() || !nNew; b2.textContent = nNew;
+  if(UI.tab === 'owner') renderOwner();
+  if(ownerAllowed()){
+    if(lastNew >= 0 && nNew > lastNew){ beep(); toast('Naya order aaya'); }
+    lastNew = nNew;
+  }
+}
+
+/* ===== events ===== */
+async function run(btn, fn){
+  if(btn) btn.disabled = true;
+  try{ await fn(); }catch(e){ toast('Kaam nahi hua. Dobara try karein.'); }
+  if(btn) btn.disabled = false;
+}
+document.addEventListener('click', e => {
+  const t = e.target.closest('button'); if(!t) return;
+  const d = t.dataset;
+  if(d.tab) return showTab(d.tab);
+  if(d.cat){ UI.cat = d.cat; renderChips(); renderMenu(); return; }
+  if(d.inc){ if(!S.soldOut[d.inc]) setQty(d.inc, (UI.cart[d.inc] || 0) + 1); return; }
+  if(d.dec) return setQty(d.dec, (UI.cart[d.dec] || 0) - 1);
+  if(d.slot){ form.slot = d.slot; $('#slotSeg').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.slot === form.slot))); return; }
+  if(d.pay){ form.pay = d.pay; $('#paySeg').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.pay === form.pay))); renderPayBox(); return; }
+  if(d.lrole) return openLogin(d.lrole, 'login', LG.note);
+  if(d.lmode) return openLogin('student', d.lmode, LG.note);
+  if(d.ot){ UI.ot = d.ot; renderOwner(); return; }
+  if(d.of){ UI.of = d.of; renderOwner(); return; }
+  if(t.id === 'openCart') return openCheckout();
+  if(t.id === 'openBtn' || t.id === 'closeBtn'){ const v = t.id === 'openBtn'; return run(t, () => putSettings({open:v})); }
+  if(t.id === 'saveSet'){
+    return run(t, async () => { await putSettings({upi:$('#upiId').value.trim()}); $('#setMsg').textContent = 'Save ho gaya.'; });
+  }
+  if(t.id === 'clearDone'){
+    const old = S.orders.filter(o => ['done', 'cancelled'].includes(o.status) && dayKey(o.createdAt) !== dayKey(Date.now()));
+    if(!old.length){ $('#clearMsg').textContent = 'Purana koi order nahi hai.'; return; }
+    if(!clearArmed){ clearArmed = true; t.textContent = 'Pakka? ' + old.length + ' order hatenge. Dobara dabayein'; return; }
+    clearArmed = false; t.textContent = 'Purane orders hatao';
+    return run(t, async () => { await dropOrders(old.map(o => o.id)); $('#clearMsg').textContent = old.length + ' order hata diye.'; });
+  }
+  switch(d.act){
+    case 'close': return closeSheet();
+    case 'place': return placeOrder();
+    case 'myorders': closeSheet(); return showTab('orders');
+    case 'copy': {
+      const txt = S.settings.upi || '';
+      const fallback = () => toast('Copy nahi hui. UPI ID ko select karke copy karein.');
+      try{ navigator.clipboard.writeText(txt).then(() => toast('UPI ID copy ho gayi'), fallback); }catch(err){ fallback(); }
+      return;
+    }
+    case 'openLogin': return openLogin('student', 'login');
+    case 'openOwnerLogin': return openLogin('owner');
+    case 'logout': return logout();
+    case 'savepw': return run(t, savePassword);
+    case 'adv': return run(t, () => patchOrder(d.id, d.to === 'done' ? {status:'done', paid:true} : {status:d.to}));
+    case 'paid': return run(t, () => patchOrder(d.id, {paid:true}));
+    case 'cancel': case 'mycancel': return run(t, () => patchOrder(d.id, {status:'cancelled'}));
+    case 'stock': return run(t, () => putSoldOut(d.id, !S.soldOut[d.id]));
+    case 'delphoto': return run(t, () => delPhoto(d.id));
+  }
+});
+document.addEventListener('submit', e => {
+  e.preventDefault();
+  if(e.target.id === 'loginForm') handleLogin(e.target.dataset.kind);
+});
+document.addEventListener('input', e => {
+  const id = e.target.id;
+  if(id === 'q'){ UI.q = e.target.value; renderMenu(); }
+  else if(id === 'stockQ'){ UI.stockQ = e.target.value; renderOwner(); }
+  else if(id === 'fName') form.name = e.target.value;
+  else if(id === 'fPhone') form.phone = e.target.value;
+  else if(id === 'fPlace') form.place = e.target.value;
+  else if(id === 'fNote') form.note = e.target.value;
+  else if(id === 'fUtr') form.utr = e.target.value;
+});
+document.addEventListener('change', async e => {
+  const t = e.target; if(!t.files) return;
+  if(t.dataset && t.dataset.photo){
+    const f = t.files[0], id = t.dataset.photo; t.value = '';
+    if(!f) return;
+    try{ await putPhoto(id, await fileToJpeg(f)); toast('Photo lag gayi'); }
+    catch(err){ toast('Photo save nahi hui. Chhoti ya doosri photo try karein.'); }
+  } else if(t.id === 'bulkPhotos'){
+    const files = Array.from(t.files); t.value = '';
+    const msg = $('#bulkMsg'); let ok = 0; const miss = [];
+    for(let i = 0; i < files.length; i++){
+      const f = files[i], m = matchItem(f.name);
+      msg.textContent = 'Upload ho raha hai ' + (i + 1) + '/' + files.length + '...';
+      if(!m){ miss.push(f.name); continue; }
+      try{ await putPhoto(m.id, await fileToJpeg(f)); ok++; }catch(err){ miss.push(f.name); }
+    }
+    msg.textContent = ok + ' photo lag gayi.' + (miss.length ? ' Match nahi hui: ' + miss.slice(0, 5).join(', ') + (miss.length > 5 ? '...' : '') : '');
+  }
+});
+$('#scrim').addEventListener('click', e => { if(e.target.id === 'scrim') closeSheet(); });
+document.addEventListener('keydown', e => { if(e.key === 'Escape' && UI.sheet) closeSheet(); });
+window.addEventListener('resize', setHH);
+setInterval(() => { if(!document.hidden && UI.tab !== 'menu') renderAll(); }, 60000);
+
+/* ===== boot ===== */
+(async function boot(){
+  renderChips(); renderMenu(); renderCartBar(); setHH();
+  onChange(renderAll);
+  await initStore();
+  renderAll();
+  if(!SESSION) openLogin('student', 'login', 'Order karne aur apne orders dekhne ke liye login karein. Menu bina login ke bhi dekh sakte hain.');
+})();
+
+</script>
+</body>
+</html>
