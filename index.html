@@ -399,9 +399,10 @@ const RAW = [
  ['milkshake','cold','Chocolate Shake',50,'glass','#6B4226','#3E2410','Thick shake']
 ];
 
+const slug = s => String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 const MENU = RAW.map(r => {
   const cat = CATS.find(c => c.id === r[1]);
-  return {id:r[0], cat:r[1], name:r[2], price:r[3], img:art(r[4], r[5], r[6], cat.tint), note:r[7]};
+  return {id:r[0], cat:r[1], name:r[2], slug:slug(r[2]), price:r[3], img:art(r[4], r[5], r[6], cat.tint), note:r[7]};
 });
 const MENU_BY_ID = Object.fromEntries(MENU.map(m => [m.id, m]));
 
@@ -533,6 +534,24 @@ async function delPhoto(id){
 }
 const imgOf = m => S.photos[m.id] || m.img;
 
+/* Picture for a menu item: owner-uploaded photo, else images/<item-name>.jpg in the site folder (GitHub build), else the drawn picture. */
+function itemImg(m, w, h){
+  const alt = esc(m.name), dim = `width="${w}" height="${h}" loading="lazy"`;
+  if(S.photos[m.id]) return `<img src="${S.photos[m.id]}" alt="${alt}" ${dim}>`;
+  if(window.STANDALONE_BUILD && m.slug && !m.custom){
+    const base = 'images/' + m.slug;
+    return `<img src="${base}.jpg" data-base="${base}" data-alt="${m.img}" alt="${alt}" ${dim}>`;
+  }
+  return `<img src="${m.img}" alt="${alt}" ${dim}>`;
+}
+document.addEventListener('error', e => {
+  const im = e.target;
+  if(!im || im.tagName !== 'IMG' || !im.dataset || !im.dataset.alt) return;
+  const exts = ['png', 'webp', 'jpeg'], n = Number(im.dataset.n || 0);
+  if(n < exts.length){ im.dataset.n = String(n + 1); im.src = im.dataset.base + '.' + exts[n]; }
+  else { const a = im.dataset.alt; im.removeAttribute('data-alt'); im.src = a; }
+}, true);
+
 /* ----- the live menu = built-in items (minus removed ones) + items the owner added ----- */
 const CAT_ART = {nashta:['ball','#E3A44A','#A96A1A'], chai:['cup','#B97A44','#F4EEE4'], snacks:['sandwich','#8DBF4F','#E8573A'],
   sabji:['bowl','#E2602F','#F5E3B8'], roti:['roti','#E9C98A','#C79A52'], thali:['thali','#E8B04B','#C23B2A'],
@@ -617,7 +636,7 @@ function cardHTML(m){
   const ctl = out ? '<span class="meta">Sold out</span>'
     : q ? `<div class="step"><button data-dec="${m.id}" aria-label="Decrease: ${esc(m.name)}">−</button><b>${q}</b><button data-inc="${m.id}" aria-label="Increase: ${esc(m.name)}">+</button></div>`
     : `<button class="add" data-inc="${m.id}" aria-label="Add: ${esc(m.name)}">Add</button>`;
-  return `<article class="card${out ? ' soldout' : ''}" data-card="${m.id}"><img src="${imgOf(m)}" alt="${esc(m.name)}" width="160" height="120" loading="lazy">${out ? '<span class="tag">Sold out</span>' : ''}<div class="body"><div class="nm">${esc(m.name)}</div><div class="ds">${esc(m.note)}</div><div class="row"><span class="price">${rs(m.price)}</span>${ctl}</div></div></article>`;
+  return `<article class="card${out ? ' soldout' : ''}" data-card="${m.id}">${itemImg(m, 160, 120)}${out ? '<span class="tag">Sold out</span>' : ''}<div class="body"><div class="nm">${esc(m.name)}</div><div class="ds">${esc(m.note)}</div><div class="row"><span class="price">${rs(m.price)}</span>${ctl}</div></div></article>`;
 }
 function menuMatches(m, q){
   const cat = (CATS.find(c => c.id === m.cat) || {}).label || '';
@@ -1011,7 +1030,7 @@ function renderOwner(){
     $('#stockList').innerHTML = getMenu().filter(m => !q || m.name.toLowerCase().includes(q)).map(m => {
       const out = !!S.soldOut[m.id], has = !!S.photos[m.id], armed = UI.delArm === m.id;
       const catName = esc((CATS.find(c => c.id === m.cat) || {}).label || '');
-      return `<div class="stk"><img src="${imgOf(m)}" alt="" width="64" height="48"><div class="n">${esc(m.name)}<div class="meta">${rs(m.price)} \u00B7 ${catName} \u00B7 ${has ? 'Real photo' : 'Drawn picture'}${m.custom ? ' \u00B7 Your item' : ''}</div><div class="acts" style="margin-top:6px"><button class="btn sm ${out ? 'bad' : 'alt'}" data-act="stock" data-id="${m.id}" aria-pressed="${out}">${out ? 'Sold out' : 'Available'}</button><label class="btn sm alt" style="cursor:pointer">Photo<input type="file" accept="image/*" hidden data-photo="${m.id}"></label>${has ? `<button class="btn sm alt" data-act="delphoto" data-id="${m.id}">Remove photo</button>` : ''}${m.custom ? `<button class="btn sm alt" data-act="edititem" data-id="${m.id}">Edit</button>` : ''}<button class="btn sm bad" data-act="delitem" data-id="${m.id}">${armed ? 'Sure? Delete' : 'Delete'}</button></div></div></div>`;
+      return `<div class="stk">${itemImg(m, 64, 48)}<div class="n">${esc(m.name)}<div class="meta">${rs(m.price)} \u00B7 ${catName} \u00B7 ${has ? 'Real photo' : 'Drawn picture'}${m.custom ? ' \u00B7 Your item' : ''}</div><div class="acts" style="margin-top:6px"><button class="btn sm ${out ? 'bad' : 'alt'}" data-act="stock" data-id="${m.id}" aria-pressed="${out}">${out ? 'Sold out' : 'Available'}</button><label class="btn sm alt" style="cursor:pointer">Photo<input type="file" accept="image/*" hidden data-photo="${m.id}"></label>${has ? `<button class="btn sm alt" data-act="delphoto" data-id="${m.id}">Remove photo</button>` : ''}${m.custom ? `<button class="btn sm alt" data-act="edititem" data-id="${m.id}">Edit</button>` : ''}<button class="btn sm bad" data-act="delitem" data-id="${m.id}">${armed ? 'Sure? Delete' : 'Delete'}</button></div></div></div>`;
     }).join('') || '<div class="empty" style="grid-column:1/-1">No items found.</div>';
     const rem = MENU.filter(m => S.removed[m.id]);
     $('#removedBox').innerHTML = rem.length
