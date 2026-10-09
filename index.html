@@ -169,12 +169,12 @@ foot{display:block}
 
 <header class="top">
   <div class="wrap">
-    <div class="brand"><b>Canteen Connect</b><span>Line mein mat khade ho, class se order karo</span></div>
-    <span class="pill" id="openPill"><i></i><em id="openTxt">Khula hai</em></span>
+    <div class="brand"><b>Canteen Connect</b><span>Skip the queue, order from your class</span></div>
+    <span class="pill" id="openPill"><i></i><em id="openTxt">Open</em></span>
     <button class="hbtn" id="authBtn" data-act="openLogin">Login</button>
     <nav class="tabs" role="tablist" aria-label="Sections">
       <button class="tab" role="tab" id="tab-menu" data-tab="menu" aria-selected="true">Menu</button>
-      <button class="tab" role="tab" id="tab-orders" data-tab="orders" aria-selected="false">Mere Orders<span class="badge" id="bOrders" hidden>0</span></button>
+      <button class="tab" role="tab" id="tab-orders" data-tab="orders" aria-selected="false">My Orders<span class="badge" id="bOrders" hidden>0</span></button>
       <button class="tab" role="tab" id="tab-owner" data-tab="owner" aria-selected="false" hidden>Owner<span class="badge" id="bOwner" hidden>0</span></button>
     </nav>
   </div>
@@ -184,7 +184,7 @@ foot{display:block}
 <main>
   <section id="v-menu" class="wrap">
     <div class="tools">
-      <input class="search" id="q" type="search" placeholder="Kuch dhundhein: samosa, dosa, paneer..." aria-label="Menu search" autocomplete="off">
+      <input class="search" id="q" type="search" placeholder="Search: samosa, dosa, paneer..." aria-label="Menu search" autocomplete="off">
       <div class="chips" id="chips" role="group" aria-label="Categories"></div>
     </div>
     <div id="menuList"></div>
@@ -206,36 +206,36 @@ foot{display:block}
       <div id="oOrders">
         <div class="chips" id="oFilter" role="group" aria-label="Order status"></div>
         <div class="olist" id="oList"></div>
-        <div style="padding-bottom:10px"><button class="btn sm alt" id="clearDone">Purane orders hatao</button> <span class="meta" id="clearMsg"></span></div>
+        <div style="padding-bottom:10px"><button class="btn sm alt" id="clearDone">Clear old orders</button> <span class="meta" id="clearMsg"></span></div>
       </div>
       <div id="oStock" hidden>
-        <div class="panel" style="max-width:none;margin-top:14px"><b>Asli photos lagayein</b><p class="meta" style="margin:6px 0 10px">Apne canteen ke khane ki photo upload karein, wo menu mein drawn picture ki jagah dikhegi. Har item ke saamne "Photo" dabayein, ya bahut saari photos ek saath chunein. Ek saath wale upload mein file ka naam item ke naam jaisa rakhein (jaise masala-dosa.jpg, samosa.jpg, paneer-butter-masala.jpg).</p><label class="btn sm" style="cursor:pointer">Bahut saari photos chunein<input type="file" id="bulkPhotos" accept="image/*" multiple hidden></label> <span class="meta" id="bulkMsg" role="status"></span></div>
-        <div style="padding-top:14px"><input class="search" id="stockQ" type="search" placeholder="Item dhundhein" aria-label="Search stock" autocomplete="off"></div>
+        <div class="panel" style="max-width:none;margin-top:14px"><b>Add real photos</b><p class="meta" style="margin:6px 0 10px">Upload photos of your canteen food and they will replace the drawn pictures in the menu. Press "Photo" next to an item, or choose many photos at once. For a bulk upload, name each file after the item (for example masala-dosa.jpg, samosa.jpg, paneer-butter-masala.jpg).</p><label class="btn sm" style="cursor:pointer">Choose many photos<input type="file" id="bulkPhotos" accept="image/*" multiple hidden></label> <span class="meta" id="bulkMsg" role="status"></span></div>
+        <div style="padding-top:14px"><input class="search" id="stockQ" type="search" placeholder="Search items" aria-label="Search stock" autocomplete="off"></div>
         <div class="stock" id="stockList"></div>
       </div>
       <div id="oSettings" hidden>
         <div class="panel">
           <h3 style="margin-bottom:12px">Canteen settings</h3>
-          <div class="fld"><span class="lbl">Canteen abhi</span>
-            <div class="seg"><button id="openBtn" aria-pressed="true">Khula hai</button><button id="closeBtn" aria-pressed="false">Band hai</button></div>
+          <div class="fld"><span class="lbl">Canteen is now</span>
+            <div class="seg"><button id="openBtn" aria-pressed="true">Open</button><button id="closeBtn" aria-pressed="false">Closed</button></div>
           </div>
-          <div class="fld"><label for="upiId">UPI ID (online payment ke liye)</label><input id="upiId" placeholder="naam@bank" autocomplete="off"></div>
-          <button class="btn sm" id="saveSet">Save karein</button>
+          <div class="fld"><label for="upiId">UPI ID (for online payment)</label><input id="upiId" placeholder="naam@bank" autocomplete="off"></div>
+          <button class="btn sm" id="saveSet">Save</button>
           <p class="meta" id="setMsg" role="status"></p>
         </div>
         <div class="panel">
-          <h3 style="margin-bottom:12px">Owner password badlein</h3>
+          <h3 style="margin-bottom:12px">Change owner password</h3>
           <div class="two">
-            <div class="fld"><label for="newPw">Naya password</label><input id="newPw" type="password" autocomplete="new-password"></div>
-            <div class="fld"><label for="newPw2">Dobara likhein</label><input id="newPw2" type="password" autocomplete="new-password"></div>
+            <div class="fld"><label for="newPw">New password</label><input id="newPw" type="password" autocomplete="new-password"></div>
+            <div class="fld"><label for="newPw2">Confirm password</label><input id="newPw2" type="password" autocomplete="new-password"></div>
           </div>
-          <button class="btn sm" data-act="savepw">Password save karein</button>
+          <button class="btn sm" data-act="savepw">Save password</button>
           <p class="meta" id="pwMsg" role="status"></p>
         </div>
       </div>
     </div>
   </section>
-  <div class="wrap foot">Pure veg menu. Rates student budget ke hisaab se. Online payment ke baad owner UTR number check karke payment confirm karta hai.</div>
+  <div class="wrap foot">Pure vegetarian menu. Prices are set for student budgets. After an online payment, the owner checks the UTR number and confirms it.</div>
 </main>
 
 <div class="cartbar" id="cartbar" hidden><button id="openCart"><span id="cartTxt">0 items</span><span class="amt" id="cartAmt">0</span></button></div>
@@ -250,15 +250,15 @@ foot{display:block}
 <script>
 /* ===== MENU DATA + DRAWN FOOD IMAGES ===== */
 const CATS = [
-  {id:'nashta', label:'Nashta', tint:'#FFF0D2'},
+  {id:'nashta', label:'Breakfast', tint:'#FFF0D2'},
   {id:'chai', label:'Chai & Coffee', tint:'#F7E4D4'},
   {id:'snacks', label:'Snacks', tint:'#FFE6D8'},
-  {id:'sabji', label:'Sabji', tint:'#FFE2C6'},
+  {id:'sabji', label:'Curries', tint:'#FFE2C6'},
   {id:'roti', label:'Roti & Rice', tint:'#F5ECD2'},
   {id:'thali', label:'Thali', tint:'#E3EEDB'},
   {id:'chinese', label:'Chinese', tint:'#FFDCD5'},
   {id:'south', label:'South Indian', tint:'#EDF2D3'},
-  {id:'cold', label:'Thanda', tint:'#DCEBF3'}
+  {id:'cold', label:'Cold Drinks', tint:'#DCEBF3'}
 ];
 
 const ART = {
@@ -285,105 +285,105 @@ function art(kind, a, b, tint){
 
 /* id, category, name, price (Rs), picture kind, colour 1, colour 2, short note */
 const RAW = [
- ['pkachori','nashta','Pyaaz Kachori',15,'ball','#E3A44A','#A96A1A','Garam kachori, chutney ke saath'],
- ['mkachori','nashta','Moong Dal Kachori',15,'ball','#DDB05A','#9C6A22','Crispy, moong dal bhari'],
- ['samosa','nashta','Samosa',12,'tri','#E2A93B','#A96F12','Aloo wala, chutney ke saath'],
- ['bsamosa','nashta','Baked Samosa',20,'tri','#D9B46A','#9A7430','Kam tel, oven mein baka hua'],
- ['aloovada','nashta','Aloo Vada',12,'ball','#E5B450','#A5701A','Besan mein tala hua aloo'],
- ['vadapav','nashta','Vada Pav',15,'ball','#E58B3A','#A5521A','Lasun chutney ke saath'],
- ['poha','nashta','Indori Poha',20,'bowl','#F0D24A','#6BAA45','Sev, pyaaz aur nimbu ke saath'],
- ['pohajalebi','nashta','Poha + Jalebi',30,'bowl','#F0D24A','#E88B1C','Indore ka combo'],
- ['alooparatha','nashta','Aloo Paratha',25,'roti','#E9C27A','#B98A3C','Dahi aur achar ke saath'],
- ['breadpakoda','nashta','Bread Pakoda',15,'tri','#DDA84A','#9C6A1A','Garam, besan wala'],
+ ['pkachori','nashta','Pyaaz Kachori',15,'ball','#E3A44A','#A96A1A','Hot kachori with chutney'],
+ ['mkachori','nashta','Moong Dal Kachori',15,'ball','#DDB05A','#9C6A22','Crispy, stuffed with moong dal'],
+ ['samosa','nashta','Samosa',12,'tri','#E2A93B','#A96F12','Potato filling, with chutney'],
+ ['bsamosa','nashta','Baked Samosa',20,'tri','#D9B46A','#9A7430','Less oil, baked in the oven'],
+ ['aloovada','nashta','Aloo Vada',12,'ball','#E5B450','#A5701A','Potato fritter in gram flour batter'],
+ ['vadapav','nashta','Vada Pav',15,'ball','#E58B3A','#A5521A','With garlic chutney'],
+ ['poha','nashta','Indori Poha',20,'bowl','#F0D24A','#6BAA45','With sev, onion and lemon'],
+ ['pohajalebi','nashta','Poha + Jalebi',30,'bowl','#F0D24A','#E88B1C','Indore\'s favourite combo'],
+ ['alooparatha','nashta','Aloo Paratha',25,'roti','#E9C27A','#B98A3C','With curd and pickle'],
+ ['breadpakoda','nashta','Bread Pakoda',15,'tri','#DDA84A','#9C6A1A','Hot, in gram flour batter'],
 
  ['chai','chai','Chai',10,'cup','#B97A44','#F4EEE4','Cutting chai'],
- ['masalachai','chai','Masala Chai',12,'cup','#A8663A','#F4EEE4','Adrak elaichi wali'],
- ['coffee','chai','Hot Coffee',20,'cup','#5B3A29','#F4EEE4','Garam doodh wali coffee'],
- ['greentea','chai','Green Tea',15,'cup','#A9B56B','#F4EEE4','Bina doodh, bina cheeni'],
+ ['masalachai','chai','Masala Chai',12,'cup','#A8663A','#F4EEE4','With ginger and cardamom'],
+ ['coffee','chai','Hot Coffee',20,'cup','#5B3A29','#F4EEE4','Hot milk coffee'],
+ ['greentea','chai','Green Tea',15,'cup','#A9B56B','#F4EEE4','No milk, no sugar'],
 
- ['vsandwich','snacks','Veg Sandwich',30,'sandwich','#8DBF4F','#E8573A','Aloo, kheera, tamatar'],
+ ['vsandwich','snacks','Veg Sandwich',30,'sandwich','#8DBF4F','#E8573A','Potato, cucumber, tomato'],
  ['gsandwich','snacks','Grilled Sandwich',50,'sandwich','#F2C14E','#8DBF4F','Cheese grilled'],
  ['burger','snacks','Veg Burger',40,'sandwich','#6BAA45','#D9482B','Aloo tikki burger'],
- ['maggi','snacks','Maggi',30,'noodles','#F2C14E','#EFE0B5','Masala maggi'],
- ['cmaggi','snacks','Cheese Maggi',45,'noodles','#F5CF5E','#EFE0B5','Upar se cheese'],
+ ['maggi','snacks','Maggi',30,'noodles','#F2C14E','#EFE0B5','Masala Maggi'],
+ ['cmaggi','snacks','Cheese Maggi',45,'noodles','#F5CF5E','#EFE0B5','Topped with cheese'],
  ['fries','snacks','French Fries',40,'fries','#F1BE42','#D8412F','Peri peri masala'],
- ['pavbhaji','snacks','Pav Bhaji',60,'bowl','#C8442E','#E8B04B','2 butter pav ke saath'],
- ['dahibhalla','snacks','Dahi Bhalla',35,'ball','#F4EFE0','#C9B98A','Meethi imli chutney'],
- ['panipuri','snacks','Pani Puri (6)',25,'ball','#E8B04B','#A5701A','Khatta meetha pani'],
- ['samosachaat','snacks','Samosa Chaat',30,'tri','#E2A93B','#C23B2A','Chhole, dahi aur chutney'],
- ['vegroll','snacks','Veg Roll',40,'roll','#E8C27A','#A5701A','Sabji aur sauce bhara'],
+ ['pavbhaji','snacks','Pav Bhaji',60,'bowl','#C8442E','#E8B04B','With 2 buttered pav'],
+ ['dahibhalla','snacks','Dahi Bhalla',35,'ball','#F4EFE0','#C9B98A','With sweet tamarind chutney'],
+ ['panipuri','snacks','Pani Puri (6)',25,'ball','#E8B04B','#A5701A','Sweet and tangy water'],
+ ['samosachaat','snacks','Samosa Chaat',30,'tri','#E2A93B','#C23B2A','With chhole, curd and chutney'],
+ ['vegroll','snacks','Veg Roll',40,'roll','#E8C27A','#A5701A','Stuffed with veggies and sauce'],
  ['paneerroll','snacks','Paneer Roll',60,'roll','#EDCB86','#A5701A','Paneer tikka roll'],
- ['chholebhature','snacks','Chhole Bhature',50,'roti','#E9C27A','#B98A3C','2 bhature, chhole, achar'],
+ ['chholebhature','snacks','Chhole Bhature',50,'roti','#E9C27A','#B98A3C','2 bhature, chhole, pickle'],
 
- ['sevtamatar','sabji','Sev Tamatar',50,'bowl','#D9481F','#F0C040','Malwa ki famous sabji'],
- ['pbm','sabji','Paneer Butter Masala',90,'bowl','#E2602F','#F5E3B8','Creamy, halka meetha'],
- ['shahi','sabji','Shahi Paneer',90,'bowl','#EDA15A','#F5E3B8','Kaju wali gravy'],
- ['kadhaip','sabji','Kadhai Paneer',90,'bowl','#C8431F','#F2E7C9','Shimla mirch ke saath'],
- ['palakp','sabji','Palak Paneer',85,'bowl','#4F8A3F','#F2E7C9','Hari palak gravy'],
- ['matarp','sabji','Matar Paneer',80,'bowl','#D9702F','#F2E7C9','Matar aur paneer'],
- ['bhurji','sabji','Paneer Bhurji',80,'bowl','#E8B84A','#F7ECC8','Masaledar bhurji'],
- ['ptm','sabji','Paneer Tikka Masala',95,'bowl','#D4551F','#F2E0B0','Tandoori tikka gravy mein'],
- ['dalfry','sabji','Dal Fry',50,'bowl','#E3A22A','#8B5A2B','Lasun tadka'],
- ['dalmakhani','sabji','Dal Makhani',70,'bowl','#7A3B22','#E8B04B','Makhan wali kaali dal'],
- ['rajma','sabji','Rajma Masala',55,'bowl','#9B2F1E','#C9573A','Punjabi rajma'],
+ ['sevtamatar','sabji','Sev Tamatar',50,'bowl','#D9481F','#F0C040','Famous Malwa curry'],
+ ['pbm','sabji','Paneer Butter Masala',90,'bowl','#E2602F','#F5E3B8','Creamy, slightly sweet'],
+ ['shahi','sabji','Shahi Paneer',90,'bowl','#EDA15A','#F5E3B8','Rich cashew gravy'],
+ ['kadhaip','sabji','Kadhai Paneer',90,'bowl','#C8431F','#F2E7C9','With capsicum'],
+ ['palakp','sabji','Palak Paneer',85,'bowl','#4F8A3F','#F2E7C9','Green spinach gravy'],
+ ['matarp','sabji','Matar Paneer',80,'bowl','#D9702F','#F2E7C9','Peas and paneer'],
+ ['bhurji','sabji','Paneer Bhurji',80,'bowl','#E8B84A','#F7ECC8','Spiced scrambled paneer'],
+ ['ptm','sabji','Paneer Tikka Masala',95,'bowl','#D4551F','#F2E0B0','Tandoori tikka in gravy'],
+ ['dalfry','sabji','Dal Fry',50,'bowl','#E3A22A','#8B5A2B','Garlic tadka'],
+ ['dalmakhani','sabji','Dal Makhani',70,'bowl','#7A3B22','#E8B04B','Buttery black dal'],
+ ['rajma','sabji','Rajma Masala',55,'bowl','#9B2F1E','#C9573A','Punjabi style rajma'],
  ['chhole','sabji','Chhole Masala',50,'bowl','#B7632B','#E8B04B','Amritsari style'],
- ['aloogobhi','sabji','Aloo Gobhi',50,'bowl','#E8B22C','#F4E4A8','Sukhi sabji'],
- ['mixveg','sabji','Mix Veg',55,'bowl','#E26B2D','#5E9E3F','Mausam ki sabziyan'],
- ['kadhi','sabji','Kadhi Pakoda',45,'bowl','#F0D060','#C98A2B','Dahi besan kadhi'],
- ['bhindi','sabji','Bhindi Masala',55,'bowl','#7DA83F','#E8B04B','Kurkuri bhindi'],
+ ['aloogobhi','sabji','Aloo Gobhi',50,'bowl','#E8B22C','#F4E4A8','Dry sabji'],
+ ['mixveg','sabji','Mix Veg',55,'bowl','#E26B2D','#5E9E3F','Seasonal vegetables'],
+ ['kadhi','sabji','Kadhi Pakoda',45,'bowl','#F0D060','#C98A2B','Curd and gram flour kadhi'],
+ ['bhindi','sabji','Bhindi Masala',55,'bowl','#7DA83F','#E8B04B','Crispy okra'],
 
  ['roti','roti','Roti',5,'roti','#E9C98A','#C79A52','Tawa roti'],
- ['butterroti','roti','Butter Roti',7,'roti','#EBCB84','#C79A52','Makhan lagi'],
- ['tandoori','roti','Tandoori Roti',8,'roti','#E0B070','#A8742E','Tandoor ki'],
- ['missi','roti','Missi Roti',10,'roti','#D9A860','#A8742E','Besan aur ajwain'],
- ['paratha','roti','Plain Paratha',15,'roti','#EBC57A','#B98A3C','Ghee wala'],
- ['naan','roti','Butter Naan',20,'roti','#F0D49A','#C79A52','Naram naan'],
- ['garlicnaan','roti','Garlic Naan',25,'roti','#EED28C','#8DBF4F','Lasun dhaniya'],
- ['plainrice','roti','Plain Rice',30,'rice','#E8E0C8','#F4EEE4','Steam chawal'],
- ['jeerarice','roti','Jeera Rice',45,'rice','#C9A55A','#E3A22A','Jeere ka tadka'],
+ ['butterroti','roti','Butter Roti',7,'roti','#EBCB84','#C79A52','With butter'],
+ ['tandoori','roti','Tandoori Roti',8,'roti','#E0B070','#A8742E','From the tandoor'],
+ ['missi','roti','Missi Roti',10,'roti','#D9A860','#A8742E','Gram flour and carom seeds'],
+ ['paratha','roti','Plain Paratha',15,'roti','#EBC57A','#B98A3C','With ghee'],
+ ['naan','roti','Butter Naan',20,'roti','#F0D49A','#C79A52','Soft naan'],
+ ['garlicnaan','roti','Garlic Naan',25,'roti','#EED28C','#8DBF4F','Garlic and coriander'],
+ ['plainrice','roti','Plain Rice',30,'rice','#E8E0C8','#F4EEE4','Steamed rice'],
+ ['jeerarice','roti','Jeera Rice',45,'rice','#C9A55A','#E3A22A','Cumin tadka'],
  ['dalchawal','roti','Dal Chawal',60,'rice','#E3A22A','#E3A22A','Dal fry + jeera rice'],
- ['rajmachawal','roti','Rajma Chawal',65,'rice','#9B2F1E','#9B2F1E','Rajma + steam rice'],
- ['kadhichawal','roti','Kadhi Chawal',60,'rice','#F0D060','#F0D060','Kadhi + steam rice'],
- ['pulao','roti','Veg Pulao',55,'rice','#8DBF4F','#F4EEE4','Raita ke saath'],
- ['biryani','roti','Veg Biryani',70,'rice','#D9902F','#F4EEE4','Raita ke saath'],
- ['dahi','roti','Dahi',15,'bowl','#FBF8EE','#FBF8EE','Taza dahi'],
- ['raita','roti','Boondi Raita',25,'bowl','#FBF8EE','#E8B04B','Thanda raita'],
+ ['rajmachawal','roti','Rajma Chawal',65,'rice','#9B2F1E','#9B2F1E','Rajma + steamed rice'],
+ ['kadhichawal','roti','Kadhi Chawal',60,'rice','#F0D060','#F0D060','Kadhi + steamed rice'],
+ ['pulao','roti','Veg Pulao',55,'rice','#8DBF4F','#F4EEE4','With raita'],
+ ['biryani','roti','Veg Biryani',70,'rice','#D9902F','#F4EEE4','With raita'],
+ ['dahi','roti','Dahi',15,'bowl','#FBF8EE','#FBF8EE','Fresh curd'],
+ ['raita','roti','Boondi Raita',25,'bowl','#FBF8EE','#E8B04B','Cool boondi raita'],
 
- ['minithali','thali','Mini Thali',70,'thali','#E8B04B','#C23B2A','Sabji, dal, 3 roti, chawal'],
- ['bigthali','thali','Big Thali',110,'thali','#E2602F','#C23B2A','2 sabji, dal, 4 roti, chawal, raita, meetha'],
- ['paneerthali','thali','Special Paneer Thali',140,'thali','#EDA15A','#4F8A3F','Paneer sabji, dal, 4 roti, chawal, raita, meetha'],
+ ['minithali','thali','Mini Thali',70,'thali','#E8B04B','#C23B2A','Sabji, dal, 3 roti, rice'],
+ ['bigthali','thali','Big Thali',110,'thali','#E2602F','#C23B2A','2 sabji, dal, 4 roti, rice, raita, sweet'],
+ ['paneerthali','thali','Special Paneer Thali',140,'thali','#EDA15A','#4F8A3F','Paneer sabji, dal, 4 roti, rice, raita, sweet'],
 
- ['vnoodles','chinese','Veg Noodles',50,'noodles','#E8B84A','#F2E8CC','Halki mirch'],
- ['hakka','chinese','Hakka Noodles',55,'noodles','#E3A83C','#F2E8CC','Sabziyon ke saath'],
- ['schnoodles','chinese','Schezwan Noodles',60,'noodles','#C8442E','#F2E8CC','Teekhe schezwan'],
- ['friedrice','chinese','Veg Fried Rice',55,'rice','#E9C27A','#F4EEE4','Sabji wale chawal'],
- ['schrice','chinese','Schezwan Fried Rice',60,'rice','#C8442E','#F4EEE4','Teekha'],
- ['manchdry','chinese','Veg Manchurian Dry',60,'ball','#7A4421','#4A2810','Crispy balls'],
- ['manchgravy','chinese','Manchurian Gravy',65,'bowl','#6B3A1E','#3E2410','Noodles ke saath best'],
- ['chillip','chinese','Chilli Paneer',90,'bowl','#C23B1E','#F2E7C9','Dry ya gravy'],
- ['springroll','chinese','Spring Roll',40,'roll','#E3A83C','#9C6A1A','2 piece'],
- ['momos','chinese','Veg Momos (6)',40,'momo','#F4EFE4','#C9B98A','Laal chutney ke saath'],
+ ['vnoodles','chinese','Veg Noodles',50,'noodles','#E8B84A','#F2E8CC','Mildly spicy'],
+ ['hakka','chinese','Hakka Noodles',55,'noodles','#E3A83C','#F2E8CC','With vegetables'],
+ ['schnoodles','chinese','Schezwan Noodles',60,'noodles','#C8442E','#F2E8CC','Spicy schezwan'],
+ ['friedrice','chinese','Veg Fried Rice',55,'rice','#E9C27A','#F4EEE4','Rice with vegetables'],
+ ['schrice','chinese','Schezwan Fried Rice',60,'rice','#C8442E','#F4EEE4','Spicy'],
+ ['manchdry','chinese','Veg Manchurian Dry',60,'ball','#7A4421','#4A2810','Crispy veg balls'],
+ ['manchgravy','chinese','Manchurian Gravy',65,'bowl','#6B3A1E','#3E2410','Best with noodles'],
+ ['chillip','chinese','Chilli Paneer',90,'bowl','#C23B1E','#F2E7C9','Dry or gravy'],
+ ['springroll','chinese','Spring Roll',40,'roll','#E3A83C','#9C6A1A','2 pieces'],
+ ['momos','chinese','Veg Momos (6)',40,'momo','#F4EFE4','#C9B98A','With red chutney'],
  ['fmomos','chinese','Fried Momos (6)',50,'momo','#E3A83C','#A5701A','Crispy fried'],
- ['honeychilli','chinese','Honey Chilli Potato',70,'fries','#E8A23A','#C23B1E','Meetha teekha'],
+ ['honeychilli','chinese','Honey Chilli Potato',70,'fries','#E8A23A','#C23B1E','Sweet and spicy'],
 
- ['idli','south','Idli Sambar (2)',35,'idli','#FBF8EE','#D9702F','Naariyal chutney ke saath'],
- ['meduvada','south','Medu Vada (2)',40,'ball','#D8A64A','#9C6A1A','Sambar chutney ke saath'],
- ['dosa','south','Plain Dosa',45,'dosa','#E8B25A','#B87A2C','Sambar chutney ke saath'],
- ['masaladosa','south','Masala Dosa',60,'dosa','#E3A648','#A5701A','Aloo masala bhara'],
- ['mysoredosa','south','Mysore Masala Dosa',70,'dosa','#D9822E','#A5521A','Laal chutney lagi'],
- ['ravadosa','south','Rava Dosa',60,'dosa','#EBC468','#B98A3C','Jaali wala crispy'],
- ['cheesedosa','south','Cheese Dosa',80,'dosa','#F2D064','#B98A3C','Upar se cheese'],
- ['uttapam','south','Uttapam',55,'dosa','#E8C27A','#6BAA45','Pyaaz tamatar wala'],
- ['upma','south','Upma',25,'bowl','#E8D07A','#6BAA45','Sooji upma'],
- ['curdrice','south','Curd Rice',45,'rice','#F4EEE4','#F4EEE4','Thanda, dahi chawal'],
+ ['idli','south','Idli Sambar (2)',35,'idli','#FBF8EE','#D9702F','With coconut chutney'],
+ ['meduvada','south','Medu Vada (2)',40,'ball','#D8A64A','#9C6A1A','With sambar and chutney'],
+ ['dosa','south','Plain Dosa',45,'dosa','#E8B25A','#B87A2C','With sambar and chutney'],
+ ['masaladosa','south','Masala Dosa',60,'dosa','#E3A648','#A5701A','Stuffed with potato masala'],
+ ['mysoredosa','south','Mysore Masala Dosa',70,'dosa','#D9822E','#A5521A','With red chutney spread'],
+ ['ravadosa','south','Rava Dosa',60,'dosa','#EBC468','#B98A3C','Crispy and lacy'],
+ ['cheesedosa','south','Cheese Dosa',80,'dosa','#F2D064','#B98A3C','Topped with cheese'],
+ ['uttapam','south','Uttapam',55,'dosa','#E8C27A','#6BAA45','With onion and tomato'],
+ ['upma','south','Upma',25,'bowl','#E8D07A','#6BAA45','Semolina upma'],
+ ['curdrice','south','Curd Rice',45,'rice','#F4EEE4','#F4EEE4','Cool curd rice'],
 
- ['coldcoffee','cold','Cold Coffee',40,'glass','#B98A6A','#6B4A32','Thanda aur meetha'],
- ['chaas','cold','Chaas',15,'glass','#F7F2E4','#C9B98A','Jeera masala'],
- ['lassi','cold','Sweet Lassi',30,'glass','#F7F2E4','#D9B46A','Malaidar'],
- ['mangolassi','cold','Mango Lassi',40,'glass','#F2B632','#D98A1C','Aam wali'],
+ ['coldcoffee','cold','Cold Coffee',40,'glass','#B98A6A','#6B4A32','Cold and sweet'],
+ ['chaas','cold','Chaas',15,'glass','#F7F2E4','#C9B98A','Cumin masala'],
+ ['lassi','cold','Sweet Lassi',30,'glass','#F7F2E4','#D9B46A','Rich and creamy'],
+ ['mangolassi','cold','Mango Lassi',40,'glass','#F2B632','#D98A1C','Made with mango'],
  ['nimbu','cold','Nimbu Pani',15,'glass','#F4E27A','#8DBF4F','Shikanji'],
- ['jaljeera','cold','Jaljeera',15,'glass','#A9C06A','#6B8A3A','Pudina jeera'],
- ['colddrink','cold','Cold Drink',20,'glass','#3A2417','#7A4A2A','Coke, Sprite ya Thums Up'],
+ ['jaljeera','cold','Jaljeera',15,'glass','#A9C06A','#6B8A3A','Mint and cumin'],
+ ['colddrink','cold','Cold Drink',20,'glass','#3A2417','#7A4A2A','Coke, Sprite or Thums Up'],
  ['water','cold','Water Bottle',20,'glass','#CFE8F2','#7FB3CC','1 litre'],
  ['milkshake','cold','Chocolate Shake',50,'glass','#6B4226','#3E2410','Thick shake']
 ];
@@ -461,7 +461,7 @@ async function initStore(){
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const hexOf = b => Array.from(new Uint8Array(b)).map(x => x.toString(16).padStart(2, '0')).join('');
 async function hashPw(pw, saltHex){
-  if(!(window.crypto && crypto.subtle)) throw {u:'Is browser mein password security available nahi hai.'};
+  if(!(window.crypto && crypto.subtle)) throw {u:'Password security is not available in this browser.'};
   const salt = saltHex ? Uint8Array.from(saltHex.match(/../g).map(h => parseInt(h, 16))) : crypto.getRandomValues(new Uint8Array(16));
   const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveBits']);
   const bits = await crypto.subtle.deriveBits({name:'PBKDF2', salt, iterations:100000, hash:'SHA-256'}, key, 256);
@@ -545,9 +545,9 @@ async function putSettings(p){
 const dayKey = ms => { const d = new Date(ms); return d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate(); };
 const todays = () => S.orders.filter(o => dayKey(o.createdAt) === dayKey(Date.now()));
 const nextToken = () => String(todays().length + 1).padStart(3, '0');
-const ago = ms => { const m = Math.max(0, Math.round((Date.now() - ms) / 60000)); return m < 1 ? 'abhi' : m < 60 ? m + ' min pehle' : Math.floor(m / 60) + ' ghante pehle'; };
-const STATUS = {new:'Naya order', cooking:'Ban raha hai', ready:'Ready hai', done:'Mil gaya', cancelled:'Cancel'};
-const SLOT = {asap:'Jaldi se jaldi', m10:'10 min mein', m20:'20 min mein', brk:'Break time mein'};
+const ago = ms => { const m = Math.max(0, Math.round((Date.now() - ms) / 60000)); return m < 1 ? 'just now' : m < 60 ? m + ' min ago' : Math.floor(m / 60) + ' hr ago'; };
+const STATUS = {new:'New order', cooking:'Preparing', ready:'Ready', done:'Collected', cancelled:'Cancelled'};
+const SLOT = {asap:'As soon as possible', m10:'In 10 min', m20:'In 20 min', brk:'At break time'};
 
 /* ===== STUDENT SIDE: menu, cart, checkout, my orders ===== */
 const UI = { tab:'menu', cat:'all', q:'', cart:LS.get('cart', {}), ot:'orders', of:'new', stockQ:'', pending:'', sheet:'', menuSig:'' };
@@ -562,21 +562,21 @@ function toast(msg){
 
 /* menu */
 function renderChips(){
-  $('#chips').innerHTML = [{id:'all', label:'Sab'}].concat(CATS).map(c =>
+  $('#chips').innerHTML = [{id:'all', label:'All'}].concat(CATS).map(c =>
     `<button class="chip" data-cat="${c.id}" aria-pressed="${UI.cat === c.id}">${esc(c.label)}</button>`).join('');
 }
 function cardHTML(m){
   const q = UI.cart[m.id] || 0, out = !!S.soldOut[m.id];
-  const ctl = out ? '<span class="meta">Khatam</span>'
-    : q ? `<div class="step"><button data-dec="${m.id}" aria-label="Kam karein: ${esc(m.name)}">−</button><b>${q}</b><button data-inc="${m.id}" aria-label="Badhayein: ${esc(m.name)}">+</button></div>`
+  const ctl = out ? '<span class="meta">Sold out</span>'
+    : q ? `<div class="step"><button data-dec="${m.id}" aria-label="Decrease: ${esc(m.name)}">−</button><b>${q}</b><button data-inc="${m.id}" aria-label="Increase: ${esc(m.name)}">+</button></div>`
     : `<button class="add" data-inc="${m.id}" aria-label="Add: ${esc(m.name)}">Add</button>`;
-  return `<article class="card${out ? ' soldout' : ''}" data-card="${m.id}"><img src="${imgOf(m)}" alt="${esc(m.name)}" width="160" height="120" loading="lazy">${out ? '<span class="tag">Khatam</span>' : ''}<div class="body"><div class="nm">${esc(m.name)}</div><div class="ds">${esc(m.note)}</div><div class="row"><span class="price">${rs(m.price)}</span>${ctl}</div></div></article>`;
+  return `<article class="card${out ? ' soldout' : ''}" data-card="${m.id}"><img src="${imgOf(m)}" alt="${esc(m.name)}" width="160" height="120" loading="lazy">${out ? '<span class="tag">Sold out</span>' : ''}<div class="body"><div class="nm">${esc(m.name)}</div><div class="ds">${esc(m.note)}</div><div class="row"><span class="price">${rs(m.price)}</span>${ctl}</div></div></article>`;
 }
 function renderMenu(){
   const q = UI.q.trim().toLowerCase();
   const items = MENU.filter(m => (UI.cat === 'all' || m.cat === UI.cat) && (!q || (m.name + ' ' + m.note).toLowerCase().includes(q)));
   const el = $('#menuList');
-  if(!items.length){ el.innerHTML = '<div class="empty">Koi item nahi mila. Kuch aur dhundhein.</div>'; return; }
+  if(!items.length){ el.innerHTML = '<div class="empty">No items found. Try a different search.</div>'; return; }
   el.innerHTML = CATS.filter(c => items.some(m => m.cat === c.id)).map(c =>
     `<section class="sec"><h2>${esc(c.label)}</h2><div class="grid">${items.filter(m => m.cat === c.id).map(cardHTML).join('')}</div></section>`).join('');
 }
@@ -598,7 +598,7 @@ function setQty(id, q){
 function renderCartBar(){
   const n = cartCount();
   $('#cartbar').hidden = !n || UI.tab !== 'menu' || !!UI.sheet;
-  $('#cartTxt').textContent = n + (n === 1 ? ' item' : ' items') + ' · Order karein';
+  $('#cartTxt').textContent = n + (n === 1 ? ' item' : ' items') + ' · View order';
   $('#cartAmt').textContent = rs(cartTotal());
 }
 
@@ -613,36 +613,36 @@ function openCheckout(){
   if(!cartCount()) return;
   if(!(SESSION && SESSION.role === 'student')){
     UI.pending = 'checkout';
-    return openLogin('student', 'login', 'Order karne ke liye pehle student login karein.');
+    return openLogin('student', 'login', 'Please log in as a student to place an order.');
   }
   form.phone = SESSION.mobile; if(!form.name) form.name = SESSION.name || '';
   const seg = (name, opts, cur) => opts.map(o => `<button type="button" data-${name}="${o[0]}" aria-pressed="${cur === o[0]}">${o[1]}</button>`).join('');
   openSheet(`
-    <h2>Aapka order <button class="x" data-act="close" aria-label="Band karein">×</button></h2>
+    <h2>Your order <button class="x" data-act="close" aria-label="Close">×</button></h2>
     <div class="lines" id="lines"></div>
     <div class="tot"><span>Total</span><span id="ttl"></span></div>
     <div class="two">
-      <div class="fld"><label for="fName">Aapka naam</label><input id="fName" autocomplete="name" value="${esc(form.name)}"></div>
-      <div class="fld"><label for="fPhone">Mobile number</label><input id="fPhone" inputmode="numeric" maxlength="10" autocomplete="tel-national" placeholder="10 digit" value="${esc(form.phone)}"></div>
+      <div class="fld"><label for="fName">Your name</label><input id="fName" autocomplete="name" value="${esc(form.name)}"></div>
+      <div class="fld"><label for="fPhone">Mobile number</label><input id="fPhone" inputmode="numeric" maxlength="10" autocomplete="tel-national" placeholder="10 digits" value="${esc(form.phone)}"></div>
     </div>
-    <div class="fld"><label for="fPlace">Class / Room / Seat</label><input id="fPlace" placeholder="Jaise: BCA 2nd year, Room 204, 3rd bench" value="${esc(form.place)}"></div>
-    <div class="fld"><span class="lbl">Kab chahiye</span><div class="seg" id="slotSeg">${seg('slot', [['asap','Jaldi se jaldi'],['m10','10 min mein'],['m20','20 min mein'],['brk','Break time mein']], form.slot)}</div></div>
-    <div class="fld"><label for="fNote">Koi note (optional)</label><input id="fNote" placeholder="Kam teekha, extra chutney..." value="${esc(form.note)}"></div>
-    <span class="lbl">Payment kaise karenge</span>
+    <div class="fld"><label for="fPlace">Class / Room / Seat</label><input id="fPlace" placeholder="e.g. BCA 2nd year, Room 204, 3rd bench" value="${esc(form.place)}"></div>
+    <div class="fld"><span class="lbl">When do you need it</span><div class="seg" id="slotSeg">${seg('slot', [['asap','As soon as possible'],['m10','In 10 min'],['m20','In 20 min'],['brk','At break time']], form.slot)}</div></div>
+    <div class="fld"><label for="fNote">Note (optional)</label><input id="fNote" placeholder="Less spicy, extra chutney..." value="${esc(form.note)}"></div>
+    <span class="lbl">Payment method</span>
     <div class="pay" id="paySeg" style="margin-top:6px">
-      <button type="button" data-pay="cod" aria-pressed="${form.pay === 'cod'}"><b>Cash on Delivery</b><span>Order milne par counter pe dein</span></button>
-      <button type="button" data-pay="online" aria-pressed="${form.pay === 'online'}"><b>Online (UPI)</b><span>Abhi scan karke ya UPI ID par bhejein</span></button>
+      <button type="button" data-pay="cod" aria-pressed="${form.pay === 'cod'}"><b>Cash on Delivery</b><span>Pay at the counter when you get the order</span></button>
+      <button type="button" data-pay="online" aria-pressed="${form.pay === 'online'}"><b>Online (UPI)</b><span>Scan the QR or send to the UPI ID now</span></button>
     </div>
     <div class="upi" id="upiBox" hidden></div>
-    <div class="fld" id="utrFld" hidden><label for="fUtr">UPI transaction ID (UTR)</label><input id="fUtr" inputmode="numeric" placeholder="Payment ke baad 12 digit ka number" value="${esc(form.utr)}"></div>
+    <div class="fld" id="utrFld" hidden><label for="fUtr">UPI transaction ID (UTR)</label><input id="fUtr" inputmode="numeric" placeholder="12-digit number shown after payment" value="${esc(form.utr)}"></div>
     <div class="err" id="err" role="alert"></div>
-    <button class="btn" id="placeBtn" data-act="place">Order place karein</button>`, 'checkout');
+    <button class="btn" id="placeBtn" data-act="place">Place order</button>`, 'checkout');
   renderLines(); renderPayBox();
 }
 function renderLines(){
   const its = cartItems();
   if(!its.length){ closeSheet(); return; }
-  $('#lines').innerHTML = its.map(x => `<div class="line"><div class="l"><b>${esc(x.m.name)}</b><span>${rs(x.m.price)} each</span></div><div class="step"><button data-dec="${x.m.id}" aria-label="Kam karein: ${esc(x.m.name)}">−</button><b>${x.q}</b><button data-inc="${x.m.id}" aria-label="Badhayein: ${esc(x.m.name)}">+</button></div><b style="min-width:52px;text-align:right">${rs(x.m.price * x.q)}</b></div>`).join('');
+  $('#lines').innerHTML = its.map(x => `<div class="line"><div class="l"><b>${esc(x.m.name)}</b><span>${rs(x.m.price)} each</span></div><div class="step"><button data-dec="${x.m.id}" aria-label="Decrease: ${esc(x.m.name)}">−</button><b>${x.q}</b><button data-inc="${x.m.id}" aria-label="Increase: ${esc(x.m.name)}">+</button></div><b style="min-width:52px;text-align:right">${rs(x.m.price * x.q)}</b></div>`).join('');
   $('#ttl').textContent = rs(cartTotal());
   if(form.pay === 'online') renderPayBox();
 }
@@ -651,8 +651,8 @@ function renderPayBox(){
   $('#utrFld').hidden = !on; $('#upiBox').hidden = !on;
   if(!on) return;
   const upi = S.settings.upi || '', amt = cartTotal();
-  const demo = upi === DEFAULT_UPI ? '<span class="meta">Yeh demo UPI ID hai. Owner apni asli ID Settings mein daalega.</span>' : '';
-  $('#upiBox').innerHTML = `<div class="qr" id="qr"></div><div class="info"><span class="lbl">UPI ID</span><span class="mono" id="upiTxt">${esc(upi)}</span><span><b>${rs(amt)}</b> bhejein</span><button type="button" class="btn sm alt" data-act="copy" style="align-self:flex-start">UPI ID copy karein</button>${demo}</div>`;
+  const demo = upi === DEFAULT_UPI ? '<span class="meta">This is a demo UPI ID. The owner will add the real ID in Settings.</span>' : '';
+  $('#upiBox').innerHTML = `<div class="qr" id="qr"></div><div class="info"><span class="lbl">UPI ID</span><span class="mono" id="upiTxt">${esc(upi)}</span><span>Send <b>${rs(amt)}</b></span><button type="button" class="btn sm alt" data-act="copy" style="align-self:flex-start">Copy UPI ID</button>${demo}</div>`;
   try{
     if(window.QRCode && upi){
       new QRCode($('#qr'), {text:'upi://pay?pa=' + encodeURIComponent(upi) + '&pn=Canteen&am=' + amt + '&cu=INR&tn=Canteen%20order', width:124, height:124});
@@ -661,32 +661,32 @@ function renderPayBox(){
 }
 async function placeOrder(){
   const err = $('#err'), btn = $('#placeBtn'); err.textContent = '';
-  if(!S.settings.open){ err.textContent = 'Canteen abhi band hai. Khulne par order kar sakenge.'; return; }
+  if(!S.settings.open){ err.textContent = 'The canteen is closed right now. You can order once it opens.'; return; }
   const all = cartItems(), items = all.filter(x => !S.soldOut[x.m.id]);
   if(items.length !== all.length){
     all.filter(x => S.soldOut[x.m.id]).forEach(x => delete UI.cart[x.m.id]);
     LS.set('cart', UI.cart); renderLines(); renderMenu(); renderCartBar();
-    err.textContent = 'Kuch items khatam ho gaye the, unhe cart se hata diya. Total check karein.'; return;
+    err.textContent = 'Some items sold out and were removed from your cart. Please check the total.'; return;
   }
-  if(!(SESSION && SESSION.role === 'student')){ err.textContent = 'Pehle student login karein.'; return; }
+  if(!(SESSION && SESSION.role === 'student')){ err.textContent = 'Please log in as a student first.'; return; }
   const name = form.name.trim(), place = form.place.trim(), phone = form.phone.replace(/\D/g, '');
-  if(!name){ err.textContent = 'Apna naam likhein.'; $('#fName').focus(); return; }
-  if(phone.length !== 10){ err.textContent = 'Mobile number 10 digit ka hona chahiye.'; $('#fPhone').focus(); return; }
-  if(!place){ err.textContent = 'Class, room ya seat batayein taaki order wahin pahunch sake.'; $('#fPlace').focus(); return; }
-  if(form.pay === 'online' && form.utr.trim().length < 6){ err.textContent = 'Payment karke UPI transaction ID (UTR) daalein.'; $('#fUtr').focus(); return; }
+  if(!name){ err.textContent = 'Enter your name.'; $('#fName').focus(); return; }
+  if(phone.length !== 10){ err.textContent = 'Mobile number must be 10 digits.'; $('#fPhone').focus(); return; }
+  if(!place){ err.textContent = 'Enter your class, room or seat so the order can reach you.'; $('#fPlace').focus(); return; }
+  if(form.pay === 'online' && form.utr.trim().length < 6){ err.textContent = 'Pay first, then enter the UPI transaction ID (UTR).'; $('#fUtr').focus(); return; }
   const o = {
     id:'o' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), token:nextToken(), uid:S.uid,
     name, place, phone, slot:form.slot, note:form.note.trim(), pay:form.pay, utr:form.pay === 'online' ? form.utr.trim() : '',
     paid:false, status:'new', total:cartTotal(), createdAt:Date.now(),
     items:items.map(x => ({id:x.m.id, name:x.m.name, price:x.m.price, qty:x.q}))
   };
-  btn.disabled = true; btn.textContent = 'Order bhej rahe hain...';
+  btn.disabled = true; btn.textContent = 'Sending your order...';
   try{ await putOrder(o); }
-  catch(e){ err.textContent = 'Order save nahi hua. Internet check karke dobara try karein.'; btn.disabled = false; btn.textContent = 'Order place karein'; return; }
+  catch(e){ err.textContent = 'Could not save the order. Check your internet and try again.'; btn.disabled = false; btn.textContent = 'Place order'; return; }
   LS.set('form', {name, place, phone});
   UI.cart = {}; LS.set('cart', {}); renderMenu();
-  const msg = o.pay === 'cod' ? `Order milne par <b>${rs(o.total)}</b> counter pe dein (cash ya UPI).` : 'Owner aapka UTR check karke payment confirm karega.';
-  openSheet(`<div class="done"><span class="lbl">Aapka token</span><div class="token">#${esc(o.token)}</div><p style="margin:0 0 6px"><b>Order mil gaya.</b> Ban jaane par Mere Orders mein "Ready hai" dikhega.</p><p class="meta" style="margin:0 0 16px">${msg}</p><button class="btn" data-act="myorders">Mere Orders dekhein</button><button class="btn alt" style="margin-top:8px" data-act="close">Aur order karein</button></div>`, 'done');
+  const msg = o.pay === 'cod' ? `Pay <b>${rs(o.total)}</b> at the counter when you collect the order (cash or UPI).` : 'The owner will check your UTR and confirm the payment.';
+  openSheet(`<div class="done"><span class="lbl">Your token</span><div class="token">#${esc(o.token)}</div><p style="margin:0 0 6px"><b>Order received.</b> "Ready" will show in My Orders when it is done.</p><p class="meta" style="margin:0 0 16px">${msg}</p><button class="btn" data-act="myorders">View My Orders</button><button class="btn alt" style="margin-top:8px" data-act="close">Order more</button></div>`, 'done');
 }
 
 /* my orders */
@@ -694,33 +694,33 @@ const seenStatus = {};
 let seenInit = false;
 function payTagFor(o){
   if(o.status === 'cancelled') return '';
-  if(o.paid) return '<span class="paytag paid">Payment mil gaya</span>';
-  return o.pay === 'online' ? '<span class="paytag due">Owner payment check kar raha hai</span>' : '<span class="paytag due">Counter pe dena hai</span>';
+  if(o.paid) return '<span class="paytag paid">Payment received</span>';
+  return o.pay === 'online' ? '<span class="paytag due">Owner is checking payment</span>' : '<span class="paytag due">Pay at counter</span>';
 }
 function myOrderCard(o){
   return `<article class="ord ${o.status === 'ready' ? 'ready' : ''}">
     <header><span class="tk">#${esc(o.token)}</span><span class="st ${o.status}">${STATUS[o.status] || o.status}</span></header>
-    ${o.status === 'ready' ? `<div style="color:var(--good);font-weight:700">Token #${esc(o.token)} ready hai. Counter se le lein ya aapki jagah par aa raha hai.</div>` : ''}
+    ${o.status === 'ready' ? `<div style="color:var(--good);font-weight:700">Token #${esc(o.token)} is ready. Please collect it from the counter.</div>` : ''}
     <ul>${(o.items || []).map(i => `<li><span>${i.qty} × ${esc(i.name)}</span><span>${rs(i.price * i.qty)}</span></li>`).join('')}</ul>
     <div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b>Total ${rs(o.total)}</b>${payTagFor(o)}</div>
     <div class="meta">${esc(o.place)} · ${SLOT[o.slot] || ''} · ${ago(o.createdAt)}</div>
-    ${o.status === 'new' ? `<div class="acts"><button class="btn sm bad" data-act="mycancel" data-id="${o.id}">Order cancel karein</button></div>` : ''}
+    ${o.status === 'new' ? `<div class="acts"><button class="btn sm bad" data-act="mycancel" data-id="${o.id}">Cancel order</button></div>` : ''}
   </article>`;
 }
 function renderMyOrders(){
   if(!(SESSION && SESSION.role === 'student')){
-    $('#myOrders').innerHTML = '<div class="empty">Apne orders dekhne ke liye student login karein.<br><button class="btn sm" data-act="openLogin" style="margin-top:14px">Student login</button></div>';
+    $('#myOrders').innerHTML = '<div class="empty">Log in as a student to see your orders.<br><button class="btn sm" data-act="openLogin" style="margin-top:14px">Student login</button></div>';
     return;
   }
   const mine = S.orders.filter(o => o.uid === S.uid).sort((a, b) => b.createdAt - a.createdAt);
   mine.forEach(o => {
-    if(seenInit && seenStatus[o.id] && seenStatus[o.id] !== o.status && o.status === 'ready') toast('Token #' + o.token + ' ready hai!');
+    if(seenInit && seenStatus[o.id] && seenStatus[o.id] !== o.status && o.status === 'ready') toast('Token #' + o.token + ' is ready!');
     seenStatus[o.id] = o.status;
   });
   seenInit = true;
   $('#myOrders').innerHTML = mine.length
     ? `<div class="olist">${mine.map(myOrderCard).join('')}</div>`
-    : '<div class="empty">Abhi koi order nahi. Menu se kuch chunein aur class se hi order kar dein.</div>';
+    : '<div class="empty">No orders yet. Pick something from the menu and order from your class.</div>';
 }
 
 /* ===== LOGIN WINDOWS: student + owner ===== */
@@ -740,7 +740,7 @@ function logout(){
   SESSION = null; LS.set('session', null); S.uid = S.deviceUid;
   UI.ot = 'orders';
   try{ history.replaceState(null, '', location.pathname + location.search); }catch(e){}
-  renderAuthBtn(); showTab('menu'); toast('Logout ho gaya');
+  renderAuthBtn(); showTab('menu'); toast('Logged out');
 }
 
 async function openLogin(role, mode, note){
@@ -752,32 +752,32 @@ async function openLogin(role, mode, note){
   let body = '';
   if(!isOwner && LG.mode === 'login'){
     body = `<form id="loginForm" data-kind="slogin" novalidate>
-      <div class="fld"><label for="lMobile">Mobile number</label><input id="lMobile" inputmode="numeric" maxlength="10" autocomplete="username" placeholder="10 digit"></div>
+      <div class="fld"><label for="lMobile">Mobile number</label><input id="lMobile" inputmode="numeric" maxlength="10" autocomplete="username" placeholder="10 digits"></div>
       <div class="fld"><label for="lPass">Password</label><input id="lPass" type="password" autocomplete="current-password"></div>
       <div class="err" id="lErr" role="alert"></div>
-      <button class="btn" type="submit">Login karein</button></form>
-      <p class="meta" style="margin-top:12px">Naye ho? <button type="button" class="linkbtn" data-lmode="register">Account banayein</button></p>`;
+      <button class="btn" type="submit">Log in</button></form>
+      <p class="meta" style="margin-top:12px">New here? <button type="button" class="linkbtn" data-lmode="register">Create account</button></p>`;
   } else if(!isOwner){
     body = `<form id="loginForm" data-kind="sreg" novalidate>
-      <div class="fld"><label for="lName">Aapka naam</label><input id="lName" autocomplete="name"></div>
-      <div class="fld"><label for="lMobile">Mobile number</label><input id="lMobile" inputmode="numeric" maxlength="10" autocomplete="username" placeholder="10 digit"></div>
-      <div class="two"><div class="fld"><label for="lPass">Password (4+ akshar)</label><input id="lPass" type="password" autocomplete="new-password"></div>
-      <div class="fld"><label for="lPass2">Dobara likhein</label><input id="lPass2" type="password" autocomplete="new-password"></div></div>
+      <div class="fld"><label for="lName">Your name</label><input id="lName" autocomplete="name"></div>
+      <div class="fld"><label for="lMobile">Mobile number</label><input id="lMobile" inputmode="numeric" maxlength="10" autocomplete="username" placeholder="10 digits"></div>
+      <div class="two"><div class="fld"><label for="lPass">Password (4+ characters)</label><input id="lPass" type="password" autocomplete="new-password"></div>
+      <div class="fld"><label for="lPass2">Confirm password</label><input id="lPass2" type="password" autocomplete="new-password"></div></div>
       <div class="err" id="lErr" role="alert"></div>
-      <button class="btn" type="submit">Account banayein</button></form>
-      <p class="meta" style="margin-top:12px">Account hai? <button type="button" class="linkbtn" data-lmode="login">Login karein</button></p>`;
+      <button class="btn" type="submit">Create account</button></form>
+      <p class="meta" style="margin-top:12px">Have an account? <button type="button" class="linkbtn" data-lmode="login">Log in</button></p>`;
   } else if(accErr){
-    body = '<div class="err" role="alert">Owner account check nahi ho paya. Internet check karke dobara kholein.</div>';
+    body = '<div class="err" role="alert">Could not check the owner account. Check your internet and open it again.</div>';
   } else if(!acc){
     const canSet = S.mode !== 'db' || S.admin || S.firebase;
-    body = canSet ? `<p class="meta" style="margin:0 0 12px">Pehli baar: owner account banayein. Yeh ID aur password yaad rakhein.</p>
+    body = canSet ? `<p class="meta" style="margin:0 0 12px">First time: create the owner account. Remember this ID and password.</p>
       <form id="loginForm" data-kind="oset" novalidate>
       <div class="fld"><label for="lOwner">Owner ID</label><input id="lOwner" autocomplete="username" value="owner"></div>
-      <div class="two"><div class="fld"><label for="lPass">Password (6+ akshar)</label><input id="lPass" type="password" autocomplete="new-password"></div>
-      <div class="fld"><label for="lPass2">Dobara likhein</label><input id="lPass2" type="password" autocomplete="new-password"></div></div>
+      <div class="two"><div class="fld"><label for="lPass">Password (6+ characters)</label><input id="lPass" type="password" autocomplete="new-password"></div>
+      <div class="fld"><label for="lPass2">Confirm password</label><input id="lPass2" type="password" autocomplete="new-password"></div></div>
       <div class="err" id="lErr" role="alert"></div>
-      <button class="btn" type="submit">Owner account banayein</button></form>`
-      : '<p class="meta">Owner account abhi bana nahi hai. Canteen owner ko apne claude.ai account se is page ko kholkar pehle account banana hoga.</p>';
+      <button class="btn" type="submit">Create owner account</button></form>`
+      : '<p class="meta">The owner account has not been created yet. The canteen owner must create it first.</p>';
   } else {
     body = `<form id="loginForm" data-kind="ologin" novalidate>
       <div class="fld"><label for="lOwner">Owner ID</label><input id="lOwner" autocomplete="username"></div>
@@ -785,9 +785,9 @@ async function openLogin(role, mode, note){
       <div class="err" id="lErr" role="alert"></div>
       <button class="btn" type="submit">Owner login</button></form>`;
   }
-  openSheet(`<h2>${isOwner ? 'Owner login' : LG.mode === 'register' ? 'Naya student account' : 'Student login'} <button class="x" data-act="close" aria-label="Band karein">×</button></h2>
+  openSheet(`<h2>${isOwner ? 'Owner login' : LG.mode === 'register' ? 'New student account' : 'Student login'} <button class="x" data-act="close" aria-label="Close">×</button></h2>
     ${LG.note ? `<p class="meta" style="margin:0 0 12px;color:var(--ink)">${esc(LG.note)}</p>` : ''}${tabs}${body}
-    ${!SESSION && !isOwner ? '<p class="meta" style="margin-top:8px"><button type="button" class="linkbtn" data-act="close">Bina login ke menu dekhein</button></p>' : ''}`, 'login');
+    ${!SESSION && !isOwner ? '<p class="meta" style="margin-top:8px"><button type="button" class="linkbtn" data-act="close">Browse the menu without logging in</button></p>' : ''}`, 'login');
   const first = $('#lMobile') || $('#lOwner') || $('#lName'); if(first && !first.value) first.focus();
 }
 
@@ -798,49 +798,49 @@ async function handleLogin(kind){
   try{
     if(kind === 'slogin'){
       const m = val('lMobile').replace(/\D/g, ''), pw = val('lPass');
-      if(m.length !== 10) throw {u:'Mobile number 10 digit ka hona chahiye.'};
+      if(m.length !== 10) throw {u:'Mobile number must be 10 digits.'};
       const acc = await getAccount('s' + m);
-      if(!acc || !(await verifyPw(pw, acc))){ await sleep(700); throw {u:'Mobile number ya password galat hai.'}; }
+      if(!acc || !(await verifyPw(pw, acc))){ await sleep(700); throw {u:'Wrong mobile number or password.'}; }
       startSession({role:'student', mobile:m, name:acc.name});
     } else if(kind === 'sreg'){
       const name = val('lName').trim(), m = val('lMobile').replace(/\D/g, ''), pw = val('lPass');
-      if(name.length < 2) throw {u:'Apna naam likhein.'};
-      if(m.length !== 10) throw {u:'Mobile number 10 digit ka hona chahiye.'};
-      if(pw.length < 4) throw {u:'Password kam se kam 4 akshar ka rakhein.'};
-      if(pw !== val('lPass2')) throw {u:'Dono password same nahi hain.'};
-      if(await getAccount('s' + m)) throw {u:'Is number se account pehle se hai. Login karein.'};
+      if(name.length < 2) throw {u:'Enter your name.'};
+      if(m.length !== 10) throw {u:'Mobile number must be 10 digits.'};
+      if(pw.length < 4) throw {u:'Password must be at least 4 characters.'};
+      if(pw !== val('lPass2')) throw {u:'The passwords do not match.'};
+      if(await getAccount('s' + m)) throw {u:'An account with this number already exists. Please log in.'};
       const h = await hashPw(pw);
       await putAccount('s' + m, {name, mobile:m, salt:h.salt, hash:h.hash, createdAt:Date.now()});
       startSession({role:'student', mobile:m, name});
     } else if(kind === 'oset'){
       const id = val('lOwner').trim().toLowerCase(), pw = val('lPass');
-      if(id.length < 3) throw {u:'Owner ID kam se kam 3 akshar ki rakhein.'};
-      if(pw.length < 6) throw {u:'Password kam se kam 6 akshar ka rakhein.'};
-      if(pw !== val('lPass2')) throw {u:'Dono password same nahi hain.'};
+      if(id.length < 3) throw {u:'Owner ID must be at least 3 characters.'};
+      if(pw.length < 6) throw {u:'Password must be at least 6 characters.'};
+      if(pw !== val('lPass2')) throw {u:'The passwords do not match.'};
       const h = await hashPw(pw);
       await putAccount('owner', {id, salt:h.salt, hash:h.hash, createdAt:Date.now()});
       startSession({role:'owner', id});
     } else if(kind === 'ologin'){
       const id = val('lOwner').trim().toLowerCase(), acc = await getAccount('owner');
-      if(!acc || acc.id !== id || !(await verifyPw(val('lPass'), acc))){ await sleep(700); throw {u:'Owner ID ya password galat hai.'}; }
+      if(!acc || acc.id !== id || !(await verifyPw(val('lPass'), acc))){ await sleep(700); throw {u:'Wrong owner ID or password.'}; }
       startSession({role:'owner', id});
     }
   }catch(e){
-    err.textContent = e && e.u ? e.u : 'Kaam nahi hua. Internet check karke dobara try karein.';
+    err.textContent = e && e.u ? e.u : 'That did not work. Check your internet and try again.';
     btn.disabled = false; return;
   }
-  closeSheet(); renderAuthBtn(); toast('Login ho gaya');
+  closeSheet(); renderAuthBtn(); toast('Logged in');
   if(SESSION.role === 'owner'){ lastNew = -1; showTab('owner'); }
   else { renderAll(); if(UI.pending === 'checkout'){ UI.pending = ''; openCheckout(); } }
 }
 
 async function savePassword(){
   const a = $('#newPw').value, b = $('#newPw2').value, msg = $('#pwMsg');
-  if(a.length < 6){ msg.textContent = 'Password kam se kam 6 akshar ka rakhein.'; return; }
-  if(a !== b){ msg.textContent = 'Dono password same nahi hain.'; return; }
+  if(a.length < 6){ msg.textContent = 'Password must be at least 6 characters.'; return; }
+  if(a !== b){ msg.textContent = 'The passwords do not match.'; return; }
   const h = await hashPw(a);
   await putAccount('owner', {id:SESSION.id, salt:h.salt, hash:h.hash, createdAt:Date.now()});
-  $('#newPw').value = ''; $('#newPw2').value = ''; msg.textContent = 'Naya password save ho gaya.';
+  $('#newPw').value = ''; $('#newPw2').value = ''; msg.textContent = 'New password saved.';
 }
 
 /* ===== OWNER SIDE ===== */
@@ -856,32 +856,32 @@ function beep(){
   }catch(e){}
 }
 function ownerCard(o){
-  const next = {new:['cooking', 'Banana shuru karein'], cooking:['ready', 'Ready hai'], ready:['done', 'Mil gaya']}[o.status];
+  const next = {new:['cooking', 'Start preparing'], cooking:['ready', 'Mark ready'], ready:['done', 'Mark collected']}[o.status];
   const payLine = o.pay === 'online' ? `Online (UPI) · UTR <span class="mono">${esc(o.utr || '-')}</span>` : 'Cash on Delivery';
   return `<article class="ord ${o.status === 'ready' ? 'ready' : ''}">
     <header><span class="tk">#${esc(o.token)}</span><span class="st ${o.status}">${STATUS[o.status] || o.status}</span></header>
     <div><b>${esc(o.name)}</b><div class="meta">${esc(o.place)} · <span class="mono">${esc(o.phone)}</span></div><div class="meta">${SLOT[o.slot] || ''} · ${ago(o.createdAt)}</div></div>
     <ul>${(o.items || []).map(i => `<li><span>${i.qty} × ${esc(i.name)}</span><span>${rs(i.price * i.qty)}</span></li>`).join('')}</ul>
     ${o.note ? `<div class="meta">Note: ${esc(o.note)}</div>` : ''}
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b>Total ${rs(o.total)}</b><span class="paytag ${o.paid ? 'paid' : 'due'}">${o.paid ? 'Payment mila' : 'Payment baaki'}</span></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b>Total ${rs(o.total)}</b><span class="paytag ${o.paid ? 'paid' : 'due'}">${o.paid ? 'Payment received' : 'Payment due'}</span></div>
     <div class="meta">${payLine}</div>
     <div class="acts">
       ${next ? `<button class="btn sm" data-act="adv" data-id="${o.id}" data-to="${next[0]}">${next[1]}</button>` : ''}
-      ${!o.paid && o.status !== 'cancelled' ? `<button class="btn sm alt" data-act="paid" data-id="${o.id}">Payment mila</button>` : ''}
+      ${!o.paid && o.status !== 'cancelled' ? `<button class="btn sm alt" data-act="paid" data-id="${o.id}">Payment received</button>` : ''}
       ${o.status === 'new' || o.status === 'cooking' ? `<button class="btn sm bad" data-act="cancel" data-id="${o.id}">Cancel</button>` : ''}
     </div></article>`;
 }
 function renderOwner(){
   const ok = ownerAllowed();
   $('#ownerBody').hidden = !ok;
-  $('#ownerLock').innerHTML = ok ? '' : '<div class="panel lock"><h3>Sirf canteen owner ke liye</h3><p class="meta">Orders aur menu manage karne ke liye owner login karein.</p><button class="btn" data-act="openOwnerLogin">Owner login</button></div>';
+  $('#ownerLock').innerHTML = ok ? '' : '<div class="panel lock"><h3>For the canteen owner only</h3><p class="meta">Log in as the owner to manage orders and the menu.</p><button class="btn" data-act="openOwnerLogin">Owner login</button></div>';
   if(!ok) return;
 
   const td = todays(), live = td.filter(o => o.status !== 'cancelled');
   const cnt = s => S.orders.filter(o => o.status === s).length;
   $('#oStats').innerHTML = [
-    [td.length, 'Aaj ke orders'], [cnt('new'), 'Naye orders'], [rs(live.reduce((s, o) => s + o.total, 0)), 'Aaj ki bikri'],
-    [rs(live.filter(o => !o.paid).reduce((s, o) => s + o.total, 0)), 'Payment baaki']
+    [td.length, "Today's orders"], [cnt('new'), 'New orders'], [rs(live.reduce((s, o) => s + o.total, 0)), "Today's sales"],
+    [rs(live.filter(o => !o.paid).reduce((s, o) => s + o.total, 0)), 'Payment due']
   ].map(x => `<div class="stat"><b>${x[0]}</b><span>${x[1]}</span></div>`).join('');
 
   $('#oTabs').querySelectorAll('[data-ot]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.ot === UI.ot)));
@@ -891,14 +891,14 @@ function renderOwner(){
     $('#oFilter').innerHTML = ['new', 'cooking', 'ready', 'done', 'cancelled'].map(s =>
       `<button class="chip" data-of="${s}" aria-pressed="${UI.of === s}">${STATUS[s]} (${cnt(s)})</button>`).join('');
     const list = S.orders.filter(o => o.status === UI.of).sort((a, b) => UI.of === 'done' || UI.of === 'cancelled' ? b.createdAt - a.createdAt : a.createdAt - b.createdAt);
-    $('#oList').innerHTML = list.length ? list.map(ownerCard).join('') : '<div class="empty" style="grid-column:1/-1">Is status mein koi order nahi.</div>';
+    $('#oList').innerHTML = list.length ? list.map(ownerCard).join('') : '<div class="empty" style="grid-column:1/-1">No orders with this status.</div>';
   }
   if(UI.ot === 'stock'){
     const q = UI.stockQ.trim().toLowerCase();
     $('#stockList').innerHTML = MENU.filter(m => !q || m.name.toLowerCase().includes(q)).map(m => {
       const out = !!S.soldOut[m.id];
       const has = !!S.photos[m.id];
-      return `<div class="stk"><img src="${imgOf(m)}" alt="" width="64" height="48"><div class="n">${esc(m.name)}<div class="meta">${rs(m.price)} · ${has ? 'Asli photo' : 'Drawn picture'}</div><div class="acts" style="margin-top:6px"><button class="btn sm ${out ? 'bad' : 'alt'}" data-act="stock" data-id="${m.id}" aria-pressed="${out}">${out ? 'Khatam' : 'Available'}</button><label class="btn sm alt" style="cursor:pointer">Photo<input type="file" accept="image/*" hidden data-photo="${m.id}"></label>${has ? `<button class="btn sm alt" data-act="delphoto" data-id="${m.id}">Photo hatao</button>` : ''}</div></div></div>`;
+      return `<div class="stk"><img src="${imgOf(m)}" alt="" width="64" height="48"><div class="n">${esc(m.name)}<div class="meta">${rs(m.price)} · ${has ? 'Real photo' : 'Drawn picture'}</div><div class="acts" style="margin-top:6px"><button class="btn sm ${out ? 'bad' : 'alt'}" data-act="stock" data-id="${m.id}" aria-pressed="${out}">${out ? 'Sold out' : 'Available'}</button><label class="btn sm alt" style="cursor:pointer">Photo<input type="file" accept="image/*" hidden data-photo="${m.id}"></label>${has ? `<button class="btn sm alt" data-act="delphoto" data-id="${m.id}">Remove photo</button>` : ''}</div></div></div>`;
     }).join('');
   }
   if(UI.ot === 'settings'){
@@ -919,15 +919,15 @@ function showTab(t){
 }
 function renderAll(){
   const open = !!S.settings.open;
-  $('#openPill').classList.toggle('off', !open); $('#openTxt').textContent = open ? 'Khula hai' : 'Band hai';
+  $('#openPill').classList.toggle('off', !open); $('#openTxt').textContent = open ? 'Open' : 'Closed';
   const bar = $('#modeNote'), inner = bar.firstElementChild;
   let msg = '', bad = false;
-  if(S.err){ msg = 'Live connection mein dikkat aayi. Page refresh karke dekhein.'; bad = true; }
-  else if(!open){ msg = 'Canteen abhi band hai. Khulne par order kar sakenge.'; bad = true; }
+  if(S.err){ msg = 'Live connection problem. Please refresh the page.'; bad = true; }
+  else if(!open){ msg = 'The canteen is closed right now. You can order once it opens.'; bad = true; }
   else if(S.mode === 'local'){
     msg = window.STANDALONE_BUILD
-      ? 'Demo mode: orders sirf is browser mein save ho rahe hain. Sabke liye live karne ke liye firebase-config.js mein Firebase config daalein.'
-      : 'Demo mode: orders sirf is browser mein save ho rahe hain. Sabke liye live karne ke liye is page ko claude.ai par share karein.';
+      ? 'Demo mode: orders are saved only in this browser. To make it live for everyone, add your Firebase config in firebase-config.js.'
+      : 'Demo mode: orders are saved only in this browser. To make it live for everyone, share this page on claude.ai.';
   }
   bar.hidden = !msg; bar.classList.toggle('bad', bad); inner.textContent = msg;
   setHH(); renderAuthBtn();
@@ -948,7 +948,7 @@ function renderAll(){
   const b2 = $('#bOwner'); b2.hidden = !ownerAllowed() || !nNew; b2.textContent = nNew;
   if(UI.tab === 'owner') renderOwner();
   if(ownerAllowed()){
-    if(lastNew >= 0 && nNew > lastNew){ beep(); toast('Naya order aaya'); }
+    if(lastNew >= 0 && nNew > lastNew){ beep(); toast('New order received'); }
     lastNew = nNew;
   }
 }
@@ -956,7 +956,7 @@ function renderAll(){
 /* ===== events ===== */
 async function run(btn, fn){
   if(btn) btn.disabled = true;
-  try{ await fn(); }catch(e){ toast('Kaam nahi hua. Dobara try karein.'); }
+  try{ await fn(); }catch(e){ toast('That did not work. Please try again.'); }
   if(btn) btn.disabled = false;
 }
 document.addEventListener('click', e => {
@@ -975,14 +975,14 @@ document.addEventListener('click', e => {
   if(t.id === 'openCart') return openCheckout();
   if(t.id === 'openBtn' || t.id === 'closeBtn'){ const v = t.id === 'openBtn'; return run(t, () => putSettings({open:v})); }
   if(t.id === 'saveSet'){
-    return run(t, async () => { await putSettings({upi:$('#upiId').value.trim()}); $('#setMsg').textContent = 'Save ho gaya.'; });
+    return run(t, async () => { await putSettings({upi:$('#upiId').value.trim()}); $('#setMsg').textContent = 'Saved.'; });
   }
   if(t.id === 'clearDone'){
     const old = S.orders.filter(o => ['done', 'cancelled'].includes(o.status) && dayKey(o.createdAt) !== dayKey(Date.now()));
-    if(!old.length){ $('#clearMsg').textContent = 'Purana koi order nahi hai.'; return; }
-    if(!clearArmed){ clearArmed = true; t.textContent = 'Pakka? ' + old.length + ' order hatenge. Dobara dabayein'; return; }
-    clearArmed = false; t.textContent = 'Purane orders hatao';
-    return run(t, async () => { await dropOrders(old.map(o => o.id)); $('#clearMsg').textContent = old.length + ' order hata diye.'; });
+    if(!old.length){ $('#clearMsg').textContent = 'There are no old orders.'; return; }
+    if(!clearArmed){ clearArmed = true; t.textContent = 'Sure? ' + old.length + ' orders will be deleted. Press again'; return; }
+    clearArmed = false; t.textContent = 'Clear old orders';
+    return run(t, async () => { await dropOrders(old.map(o => o.id)); $('#clearMsg').textContent = old.length + ' orders deleted.'; });
   }
   switch(d.act){
     case 'close': return closeSheet();
@@ -990,8 +990,8 @@ document.addEventListener('click', e => {
     case 'myorders': closeSheet(); return showTab('orders');
     case 'copy': {
       const txt = S.settings.upi || '';
-      const fallback = () => toast('Copy nahi hui. UPI ID ko select karke copy karein.');
-      try{ navigator.clipboard.writeText(txt).then(() => toast('UPI ID copy ho gayi'), fallback); }catch(err){ fallback(); }
+      const fallback = () => toast('Could not copy. Please select and copy the UPI ID.');
+      try{ navigator.clipboard.writeText(txt).then(() => toast('UPI ID copied'), fallback); }catch(err){ fallback(); }
       return;
     }
     case 'openLogin': return openLogin('student', 'login');
@@ -1024,18 +1024,18 @@ document.addEventListener('change', async e => {
   if(t.dataset && t.dataset.photo){
     const f = t.files[0], id = t.dataset.photo; t.value = '';
     if(!f) return;
-    try{ await putPhoto(id, await fileToJpeg(f)); toast('Photo lag gayi'); }
-    catch(err){ toast('Photo save nahi hui. Chhoti ya doosri photo try karein.'); }
+    try{ await putPhoto(id, await fileToJpeg(f)); toast('Photo added'); }
+    catch(err){ toast('Could not save the photo. Try a smaller or different photo.'); }
   } else if(t.id === 'bulkPhotos'){
     const files = Array.from(t.files); t.value = '';
     const msg = $('#bulkMsg'); let ok = 0; const miss = [];
     for(let i = 0; i < files.length; i++){
       const f = files[i], m = matchItem(f.name);
-      msg.textContent = 'Upload ho raha hai ' + (i + 1) + '/' + files.length + '...';
+      msg.textContent = 'Uploading ' + (i + 1) + '/' + files.length + '...';
       if(!m){ miss.push(f.name); continue; }
       try{ await putPhoto(m.id, await fileToJpeg(f)); ok++; }catch(err){ miss.push(f.name); }
     }
-    msg.textContent = ok + ' photo lag gayi.' + (miss.length ? ' Match nahi hui: ' + miss.slice(0, 5).join(', ') + (miss.length > 5 ? '...' : '') : '');
+    msg.textContent = ok + ' photos added.' + (miss.length ? ' No match: ' + miss.slice(0, 5).join(', ') + (miss.length > 5 ? '...' : '') : '');
   }
 });
 $('#scrim').addEventListener('click', e => { if(e.target.id === 'scrim') closeSheet(); });
@@ -1043,7 +1043,7 @@ document.addEventListener('keydown', e => { if(e.key === 'Escape' && UI.sheet) c
 window.addEventListener('resize', setHH);
 setInterval(() => { if(!document.hidden && UI.tab !== 'menu') renderAll(); }, 60000);
 
-/* Owner ka chhupa hua rasta: site ke link ke aage #owner */
+/* Hidden owner entry: add #owner after the site link */
 const wantOwner = () => /^#owner$/i.test(location.hash);
 function checkHash(){
   if(!wantOwner()) return;
@@ -1058,7 +1058,7 @@ window.addEventListener('hashchange', checkHash);
   await initStore();
   renderAll();
   if(wantOwner()) checkHash();
-  else if(!SESSION) openLogin('student', 'login', 'Order karne aur apne orders dekhne ke liye login karein. Menu bina login ke bhi dekh sakte hain.');
+  else if(!SESSION) openLogin('student', 'login', 'Log in to place orders and see your orders. You can browse the menu without logging in.');
 })();
 
 </script>
