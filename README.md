@@ -33,7 +33,9 @@ Is point par site "Demo mode" mein hai. Orders sirf usi phone ya browser mein sa
 4. Upar **Project settings** (gear icon) > **Your apps** > **Web** (`</>`) dabayein. App ka naam likhein, **Register app** dabayein. Jo `firebaseConfig` dikhe, uski values copy karein.
 5. GitHub repo mein `firebase-config.js` kholein, pencil icon dabayein, apni values bharein, aur **Commit changes** dabayein.
 6. 1-2 minute baad site refresh karein. Upar ka "Demo mode" wala peela bar gayab ho jayega. Ab orders sab devices par live dikhenge.
-7. **Turant** Owner tab kholke owner ID aur password se owner account bana lein. Pehli baar jo bana leta hai wahi owner hota hai.
+7. **Turant** owner link kholein: apni site ke link ke aage `#owner` lagayein, jaise `https://AAPKA-USERNAME.github.io/canteen-connect/#owner`. Wahan owner ID aur password se owner account bana lein. Pehli baar jo bana leta hai wahi owner hota hai.
+
+Owner ka tab students ko nahi dikhta. Owner hamesha isi `#owner` wale link se login karta hai (is link ko bookmark kar lein), aur login ke baad usse Owner tab dikhne lagta hai.
 
 ## Owner ke kaam
 

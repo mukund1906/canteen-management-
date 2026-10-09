@@ -175,7 +175,7 @@ foot{display:block}
     <nav class="tabs" role="tablist" aria-label="Sections">
       <button class="tab" role="tab" id="tab-menu" data-tab="menu" aria-selected="true">Menu</button>
       <button class="tab" role="tab" id="tab-orders" data-tab="orders" aria-selected="false">Mere Orders<span class="badge" id="bOrders" hidden>0</span></button>
-      <button class="tab" role="tab" id="tab-owner" data-tab="owner" aria-selected="false">Owner<span class="badge" id="bOwner" hidden>0</span></button>
+      <button class="tab" role="tab" id="tab-owner" data-tab="owner" aria-selected="false" hidden>Owner<span class="badge" id="bOwner" hidden>0</span></button>
     </nav>
   </div>
 </header>
@@ -738,7 +738,9 @@ function startSession(s){
 }
 function logout(){
   SESSION = null; LS.set('session', null); S.uid = S.deviceUid;
-  UI.ot = 'orders'; renderAuthBtn(); showTab('menu'); toast('Logout ho gaya');
+  UI.ot = 'orders';
+  try{ history.replaceState(null, '', location.pathname + location.search); }catch(e){}
+  renderAuthBtn(); showTab('menu'); toast('Logout ho gaya');
 }
 
 async function openLogin(role, mode, note){
@@ -746,7 +748,7 @@ async function openLogin(role, mode, note){
   let acc = null, accErr = false;
   if(LG.role === 'owner'){ try{ acc = await getAccount('owner'); }catch(e){ accErr = true; } }
   const isOwner = LG.role === 'owner';
-  const tabs = `<div class="seg" role="group" aria-label="Login type" style="margin-bottom:14px"><button type="button" data-lrole="student" aria-pressed="${!isOwner}">Student</button><button type="button" data-lrole="owner" aria-pressed="${isOwner}">Owner</button></div>`;
+  const tabs = '';
   let body = '';
   if(!isOwner && LG.mode === 'login'){
     body = `<form id="loginForm" data-kind="slogin" novalidate>
@@ -767,7 +769,7 @@ async function openLogin(role, mode, note){
   } else if(accErr){
     body = '<div class="err" role="alert">Owner account check nahi ho paya. Internet check karke dobara kholein.</div>';
   } else if(!acc){
-    const canSet = S.mode !== 'db' || S.admin;
+    const canSet = S.mode !== 'db' || S.admin || S.firebase;
     body = canSet ? `<p class="meta" style="margin:0 0 12px">Pehli baar: owner account banayein. Yeh ID aur password yaad rakhein.</p>
       <form id="loginForm" data-kind="oset" novalidate>
       <div class="fld"><label for="lOwner">Owner ID</label><input id="lOwner" autocomplete="username" value="owner"></div>
@@ -929,6 +931,7 @@ function renderAll(){
   }
   bar.hidden = !msg; bar.classList.toggle('bad', bad); inner.textContent = msg;
   setHH(); renderAuthBtn();
+  $('#tab-owner').hidden = !ownerAllowed();
 
   let changed = false;
   Object.keys(UI.cart).forEach(id => { if(S.soldOut[id]){ delete UI.cart[id]; changed = true; } });
@@ -1040,13 +1043,22 @@ document.addEventListener('keydown', e => { if(e.key === 'Escape' && UI.sheet) c
 window.addEventListener('resize', setHH);
 setInterval(() => { if(!document.hidden && UI.tab !== 'menu') renderAll(); }, 60000);
 
+/* Owner ka chhupa hua rasta: site ke link ke aage #owner */
+const wantOwner = () => /^#owner$/i.test(location.hash);
+function checkHash(){
+  if(!wantOwner()) return;
+  if(ownerAllowed()) showTab('owner'); else openLogin('owner');
+}
+window.addEventListener('hashchange', checkHash);
+
 /* ===== boot ===== */
 (async function boot(){
   renderChips(); renderMenu(); renderCartBar(); setHH();
   onChange(renderAll);
   await initStore();
   renderAll();
-  if(!SESSION) openLogin('student', 'login', 'Order karne aur apne orders dekhne ke liye login karein. Menu bina login ke bhi dekh sakte hain.');
+  if(wantOwner()) checkHash();
+  else if(!SESSION) openLogin('student', 'login', 'Order karne aur apne orders dekhne ke liye login karein. Menu bina login ke bhi dekh sakte hain.');
 })();
 
 </script>
