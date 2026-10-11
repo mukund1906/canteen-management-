@@ -526,18 +526,21 @@ async function delPhoto(id){
 const imgOf = m => S.photos[m.id] || m.img;
 
 /* Picture for a menu item: owner-uploaded photo, else images/<item-name>.jpg in the site folder (GitHub build), else the drawn picture. */
+const PHOTO_MAP = {"samosa":"photo-1601050690597-df0568f70950","vada-pav":"photo-1750767397012-3413ba4fdbc7","indori-poha":"photo-1789991184412-c29c9dfa2b39","plain-paratha":"photo-1683533761804-5fc12be0f684","pav-bhaji":"photo-1753357303396-704b5abe8945","pani-puri-6":"photo-1586357507341-3fbe59f2a5d9","paneer-butter-masala":"photo-1631452180519-c014fe946bc7","masala-dosa":"photo-1668236543090-82eba5ee5976","plain-dosa":"photo-1694849789325-914b71ab4075","mysore-masala-dosa":"photo-1708146464361-5c5ce4f9abb6","chhole-bhature":"photo-1788602564560-9bcbf0f9acb6","fried-momos-6":"photo-1738608084602-f9543952188e","veg-momos-6":"photo-1625220194771-7ebdea0b70b9","big-thali":"photo-1680993032090-1ef7ea9b51e5","mini-thali":"photo-1742281257687-092746ad6021","idli-sambar-2":"photo-1632104667384-06f58cb7ad44","veg-noodles":"photo-1617622141675-d3005b9067c5","hakka-noodles":"photo-1617622141573-2e00d8818f3f","veg-fried-rice":"photo-1603133872878-684f208fb84b","chilli-paneer":"photo-1690401767645-595de0e0e5f8","dal-makhani":"photo-1697155406121-85aac6236000","palak-paneer":"photo-1589647363585-f4a7d3877b10","rajma-chawal":"photo-1668236534990-73c4ed23043c","dal-fry":"photo-1755090154817-58d9d36ec988","chhole-masala":"photo-1788602564560-9bcbf0f9acb6","jeera-rice":"photo-1789991184293-224a84e41900","roti":"photo-1600935926387-12d9b03066f0","butter-naan":"photo-1697155406014-04dc649b0953","garlic-naan":"photo-1697155406014-04dc649b0953","sweet-lassi":"photo-1675064982913-067b64880f5f","cold-coffee":"photo-1562447457-579fc34967fb"};
+const photoUrl = s => PHOTO_MAP[s] ? "https://images.unsplash.com/"+PHOTO_MAP[s]+"?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=640" : "";
 function itemImg(m, w, h){
   const alt = esc(m.name), dim = `width="${w}" height="${h}" loading="lazy"`;
   if(S.photos[m.id]) return `<img src="${S.photos[m.id]}" alt="${alt}" ${dim}>`;
   if(window.STANDALONE_BUILD && m.slug && !m.custom){
-    const base = 'images/' + m.slug;
-    return `<img src="${base}.jpg" data-base="${base}" data-alt="${m.img}" alt="${alt}" ${dim}>`;
+    const base = 'images/' + m.slug, u = photoUrl(m.slug);
+    return `<img src="${u || base + '.jpg'}" ${u ? 'data-u="1" ' : ''}data-base="${base}" data-alt="${m.img}" alt="${alt}" ${dim}>`;
   }
   return `<img src="${m.img}" alt="${alt}" ${dim}>`;
 }
 document.addEventListener('error', e => {
   const im = e.target;
   if(!im || im.tagName !== 'IMG' || !im.dataset || !im.dataset.alt) return;
+  if(im.dataset.u){ delete im.dataset.u; im.src = im.dataset.base + '.jpg'; return; }
   const exts = ['png', 'webp', 'jpeg'], n = Number(im.dataset.n || 0);
   if(n < exts.length){ im.dataset.n = String(n + 1); im.src = im.dataset.base + '.' + exts[n]; }
   else { const a = im.dataset.alt; im.removeAttribute('data-alt'); im.src = a; }
@@ -1199,5 +1202,6 @@ window.addEventListener('hashchange', checkHash);
 })();
 
 </script>
+<p style="text-align:center;font-size:12px;color:#777;margin:16px 8px 90px">Food photos: <a href="https://unsplash.com/?utm_source=canteen&utm_medium=referral" target="_blank" rel="noopener">Unsplash</a> photographers</p>
 </body>
 </html>
