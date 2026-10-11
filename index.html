@@ -1193,7 +1193,9 @@ setInterval(() => { if(!document.hidden && UI.tab !== 'menu') renderAll(); }, 60
 const wantOwner = () => /^#owner$/i.test(location.hash);
 function checkHash(){
   if(!wantOwner()) return;
-  if(ownerAllowed()) showTab('owner'); else openLogin('owner');
+  /* No password: whoever opens the secret #owner link goes straight into the owner side. */
+  if(!ownerAllowed()){ startSession({role:'owner', id:'owner'}); renderAll(); }
+  showTab('owner');
 }
 window.addEventListener('hashchange', checkHash);
 
