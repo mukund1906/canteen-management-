@@ -234,15 +234,6 @@ foot{display:block}
           <button class="btn sm" id="saveSet">Save</button>
           <p class="meta" id="setMsg" role="status"></p>
         </div>
-        <div class="panel">
-          <h3 style="margin-bottom:12px">Change owner password</h3>
-          <div class="two">
-            <div class="fld"><label for="newPw">New password</label><input id="newPw" type="password" autocomplete="new-password"></div>
-            <div class="fld"><label for="newPw2">Confirm password</label><input id="newPw2" type="password" autocomplete="new-password"></div>
-          </div>
-          <button class="btn sm" data-act="savepw">Save password</button>
-          <p class="meta" id="pwMsg" role="status"></p>
-        </div>
       </div>
     </div>
   </section>
@@ -805,6 +796,7 @@ function renderMyOrders(){
 
 /* ===== LOGIN WINDOWS: student + owner ===== */
 let LG = {role:'student', mode:'login', note:''};
+const OWNER_ID = 'owner', OWNER_PW = 'owner1234';
 
 function renderAuthBtn(){
   const b = $('#authBtn');
@@ -826,7 +818,7 @@ function logout(){
 async function openLogin(role, mode, note){
   LG = {role:role || 'student', mode:mode || 'login', note:note || ''};
   let acc = null, accErr = false;
-  if(LG.role === 'owner'){ try{ acc = await getAccount('owner'); }catch(e){ accErr = true; } }
+  if(LG.role === 'owner') acc = {fixed:true};   /* owner has one fixed login; no account creation */
   const isOwner = LG.role === 'owner';
   const tabs = '';
   let body = '';
@@ -901,8 +893,8 @@ async function handleLogin(kind){
       await putAccount('owner', {id, salt:h.salt, hash:h.hash, createdAt:Date.now()});
       startSession({role:'owner', id});
     } else if(kind === 'ologin'){
-      const id = val('lOwner').trim().toLowerCase(), acc = await getAccount('owner');
-      if(!acc || acc.id !== id || !(await verifyPw(val('lPass'), acc))){ await sleep(700); throw {u:'Wrong owner ID or password.'}; }
+      const id = val('lOwner').trim().toLowerCase();
+      if(id !== OWNER_ID || val('lPass') !== OWNER_PW){ await sleep(700); throw {u:'Wrong owner ID or password.'}; }
       startSession({role:'owner', id});
     }
   }catch(e){
@@ -1135,8 +1127,7 @@ document.addEventListener('click', e => {
     case 'openLogin': return openLogin('student', 'login');
     case 'openOwnerLogin': return openLogin('owner');
     case 'logout': return logout();
-    case 'savepw': return run(t, savePassword);
-    case 'adv': return run(t, () => patchOrder(d.id, d.to === 'done' ? {status:'done', paid:true} : {status:d.to}));
+        case 'adv': return run(t, () => patchOrder(d.id, d.to === 'done' ? {status:'done', paid:true} : {status:d.to}));
     case 'paid': return run(t, () => patchOrder(d.id, {paid:true}));
     case 'cancel': case 'mycancel': return run(t, () => patchOrder(d.id, {status:'cancelled'}));
     case 'stock': return run(t, () => putSoldOut(d.id, !S.soldOut[d.id]));
@@ -1193,9 +1184,7 @@ setInterval(() => { if(!document.hidden && UI.tab !== 'menu') renderAll(); }, 60
 const wantOwner = () => /^#owner$/i.test(location.hash);
 function checkHash(){
   if(!wantOwner()) return;
-  /* No password: whoever opens the secret #owner link goes straight into the owner side. */
-  if(!ownerAllowed()){ startSession({role:'owner', id:'owner'}); renderAll(); }
-  showTab('owner');
+  if(ownerAllowed()) showTab('owner'); else openLogin('owner');
 }
 window.addEventListener('hashchange', checkHash);
 
