@@ -231,13 +231,18 @@ foot{display:block}
             <div class="seg"><button id="openBtn" aria-pressed="true">Open</button><button id="closeBtn" aria-pressed="false">Closed</button></div>
           </div>
           <div class="fld"><label for="upiId">UPI ID (for online payment)</label><input id="upiId" placeholder="naam@bank" autocomplete="off"></div>
+          <div class="fld"><span class="lbl">Payment QR code image (optional)</span>
+            <div id="qrPrev" class="meta" style="margin:6px 0">No QR uploaded. Students will see an auto QR made from the UPI ID.</div>
+            <input id="qrFile" type="file" accept="image/*">
+            <button class="btn sm alt" id="qrRemove" type="button" style="margin-top:8px" hidden>Remove QR image</button>
+          </div>
           <button class="btn sm" id="saveSet">Save</button>
           <p class="meta" id="setMsg" role="status"></p>
         </div>
       </div>
     </div>
   </section>
-  <div class="wrap foot">Pure vegetarian menu. Prices are set for student budgets. After an online payment, the owner checks the UTR number and confirms it.</div>
+  <div class="wrap foot">Pure vegetarian menu. Prices are set for student budgets. Payment is online (UPI). After paying, enter the UTR number and the owner will confirm it.</div>
 </main>
 
 <div class="cartbar" id="cartbar" hidden><button id="openCart"><span id="cartTxt">0 items</span><span class="amt" id="cartAmt">0</span></button></div>
@@ -407,11 +412,11 @@ const LS = {
 };
 let SESSION = LS.get('session', null);   // {role:'student', mobile, name} or {role:'owner', id}
 const DEFAULT_UPI = 'canteen@upi';
-const S = { mode:'local', db:null, uid:'', admin:false, orders:[], soldOut:{}, photos:{}, photoVer:0, items:{}, removed:{}, settings:{open:true, upi:DEFAULT_UPI}, err:null };
+const S = { mode:'local', db:null, uid:'', admin:false, orders:[], soldOut:{}, photos:{}, photoVer:0, items:{}, removed:{}, settings:{open:true, upi:DEFAULT_UPI, qr:''}, err:null };
 const listeners = [];
 const onChange = fn => listeners.push(fn);
 const fire = () => listeners.forEach(f => { try{ f(); }catch(e){ console.error(e); } });
-const withDefaults = o => Object.assign({open:true, upi:DEFAULT_UPI}, o || {});
+const withDefaults = o => Object.assign({open:true, upi:DEFAULT_UPI, qr:''}, o || {});
 
 function loadLocal(){
   S.orders = LS.get('orders', []);
@@ -595,6 +600,19 @@ function fileToJpeg(file, w, h){
     im.src = url;
   });
 }
+function fileToPng(file){
+  return new Promise((res, rej) => {
+    const url = URL.createObjectURL(file), im = new Image();
+    im.onload = () => {
+      const m = 420, r = Math.min(1, m / Math.max(im.width, im.height)), w = Math.round(im.width * r), h = Math.round(im.height * r);
+      const c = document.createElement('canvas'); c.width = w; c.height = h;
+      const x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, w, h); x.drawImage(im, 0, 0, w, h);
+      URL.revokeObjectURL(url); res(c.toDataURL('image/jpeg', .9));
+    };
+    im.onerror = () => { URL.revokeObjectURL(url); rej(new Error('bad image')); };
+    im.src = url;
+  });
+}
 async function putSettings(p){
   const next = Object.assign({}, S.settings, p);
   if(S.mode === 'db'){ await S.db.doc('settings/shop').set(next); }
@@ -612,7 +630,7 @@ const SLOT = {asap:'As soon as possible', m10:'In 10 min', m20:'In 20 min', brk:
 /* ===== STUDENT SIDE: menu, cart, checkout, my orders ===== */
 const UI = { tab:'menu', cat:'all', q:'', cart:LS.get('cart', {}), ot:'orders', of:'new', stockQ:'', pending:'', sheet:'', menuSig:'' };
 const form = Object.assign({name:'', place:'', phone:'', slot:'asap', pay:'cod', note:'', utr:''}, LS.get('form', {}));
-form.slot = 'asap'; form.pay = 'cod'; form.note = ''; form.utr = '';
+form.slot = 'asap'; form.pay = 'online'; form.note = ''; form.utr = '';
 
 let toastTimer = 0;
 function toast(msg){
@@ -702,13 +720,9 @@ function openCheckout(){
     <div class="fld"><label for="fPlace">Class / Room / Seat</label><input id="fPlace" placeholder="e.g. BCA 2nd year, Room 204, 3rd bench" value="${esc(form.place)}"></div>
     <div class="fld"><span class="lbl">When do you need it</span><div class="seg" id="slotSeg">${seg('slot', [['asap','As soon as possible'],['m10','In 10 min'],['m20','In 20 min'],['brk','At break time']], form.slot)}</div></div>
     <div class="fld"><label for="fNote">Note (optional)</label><input id="fNote" placeholder="Less spicy, extra chutney..." value="${esc(form.note)}"></div>
-    <span class="lbl">Payment method</span>
-    <div class="pay" id="paySeg" style="margin-top:6px">
-      <button type="button" data-pay="cod" aria-pressed="${form.pay === 'cod'}"><b>Cash on Delivery</b><span>Pay at the counter when you get the order</span></button>
-      <button type="button" data-pay="online" aria-pressed="${form.pay === 'online'}"><b>Online (UPI)</b><span>Scan the QR or send to the UPI ID now</span></button>
-    </div>
-    <div class="upi" id="upiBox" hidden></div>
-    <div class="fld" id="utrFld" hidden><label for="fUtr">UPI transaction ID (UTR)</label><input id="fUtr" inputmode="numeric" placeholder="12-digit number shown after payment" value="${esc(form.utr)}"></div>
+    <span class="lbl">Payment (online only)</span>
+    <div class="upi" id="upiBox" style="margin-top:6px"></div>
+    <div class="fld" id="utrFld"><label for="fUtr">UPI transaction ID (UTR)</label><input id="fUtr" inputmode="numeric" placeholder="12-digit number shown after payment" value="${esc(form.utr)}"></div>
     <div class="err" id="err" role="alert"></div>
     <button class="btn" id="placeBtn" data-act="place">Place order</button>`, 'checkout');
   renderLines(); renderPayBox();
@@ -718,17 +732,16 @@ function renderLines(){
   if(!its.length){ closeSheet(); return; }
   $('#lines').innerHTML = its.map(x => `<div class="line"><div class="l"><b>${esc(x.m.name)}</b><span>${rs(x.m.price)} each</span></div><div class="step"><button data-dec="${x.m.id}" aria-label="Decrease: ${esc(x.m.name)}">−</button><b>${x.q}</b><button data-inc="${x.m.id}" aria-label="Increase: ${esc(x.m.name)}">+</button></div><b style="min-width:52px;text-align:right">${rs(x.m.price * x.q)}</b></div>`).join('');
   $('#ttl').textContent = rs(cartTotal());
-  if(form.pay === 'online') renderPayBox();
+  renderPayBox();
 }
 function renderPayBox(){
-  const on = form.pay === 'online';
-  $('#utrFld').hidden = !on; $('#upiBox').hidden = !on;
-  if(!on) return;
+  form.pay = 'online';
   const upi = S.settings.upi || '', amt = cartTotal();
-  const demo = upi === DEFAULT_UPI ? '<span class="meta">This is a demo UPI ID. The owner will add the real ID in Settings.</span>' : '';
-  $('#upiBox').innerHTML = `<div class="qr" id="qr"></div><div class="info"><span class="lbl">UPI ID</span><span class="mono" id="upiTxt">${esc(upi)}</span><span>Send <b>${rs(amt)}</b></span><button type="button" class="btn sm alt" data-act="copy" style="align-self:flex-start">Copy UPI ID</button>${demo}</div>`;
+  const demo = upi === DEFAULT_UPI ? '<span class="meta">The owner has not added a payment ID yet. Please ask at the counter.</span>' : '';
+  $('#upiBox').innerHTML = `<div class="qr" id="qr">${S.settings.qr ? `<img src="${S.settings.qr}" alt="Pay by scanning this QR code" style="width:180px;height:180px;object-fit:contain;display:block">` : ''}</div><div class="info"><span class="lbl">UPI ID</span><span class="mono" id="upiTxt">${esc(upi)}</span><span>Send <b>${rs(amt)}</b></span><button type="button" class="btn sm alt" data-act="copy" style="align-self:flex-start">Copy UPI ID</button>${demo}</div>`;
   try{
-    if(window.QRCode && upi){
+    if(S.settings.qr){ /* owner's own QR image is shown */ }
+    else if(window.QRCode && upi){
       new QRCode($('#qr'), {text:'upi://pay?pa=' + encodeURIComponent(upi) + '&pn=Canteen&am=' + amt + '&cu=INR&tn=Canteen%20order', width:124, height:124});
     } else { $('#qr').hidden = true; }
   }catch(e){ $('#qr').hidden = true; }
@@ -747,10 +760,10 @@ async function placeOrder(){
   if(!name){ err.textContent = 'Enter your name.'; $('#fName').focus(); return; }
   if(phone.length !== 10){ err.textContent = 'Mobile number must be 10 digits.'; $('#fPhone').focus(); return; }
   if(!place){ err.textContent = 'Enter your class, room or seat so the order can reach you.'; $('#fPlace').focus(); return; }
-  if(form.pay === 'online' && form.utr.trim().length < 6){ err.textContent = 'Pay first, then enter the UPI transaction ID (UTR).'; $('#fUtr').focus(); return; }
+  if(form.utr.trim().length < 6){ err.textContent = 'Pay first, then enter the UPI transaction ID (UTR).'; $('#fUtr').focus(); return; }
   const o = {
     id:'o' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), token:nextToken(), uid:S.uid,
-    name, place, phone, slot:form.slot, note:form.note.trim(), pay:form.pay, utr:form.pay === 'online' ? form.utr.trim() : '',
+    name, place, phone, slot:form.slot, note:form.note.trim(), pay:'online', utr:form.utr.trim(),
     paid:false, status:'new', total:cartTotal(), createdAt:Date.now(),
     items:items.map(x => ({id:x.m.id, name:x.m.name, price:x.m.price, qty:x.q}))
   };
@@ -759,7 +772,7 @@ async function placeOrder(){
   catch(e){ err.textContent = 'Could not save the order. Check your internet and try again.'; btn.disabled = false; btn.textContent = 'Place order'; return; }
   LS.set('form', {name, place, phone});
   UI.cart = {}; LS.set('cart', {}); renderMenu();
-  const msg = o.pay === 'cod' ? `Pay <b>${rs(o.total)}</b> at the counter when you collect the order (cash or UPI).` : 'The owner will check your UTR and confirm the payment.';
+  const msg = 'The owner will check your UTR and confirm the payment.';
   openSheet(`<div class="done"><span class="lbl">Your token</span><div class="token">#${esc(o.token)}</div><p style="margin:0 0 6px"><b>Order received.</b> "Ready" will show in My Orders when it is done.</p><p class="meta" style="margin:0 0 16px">${msg}</p><button class="btn" data-act="myorders">View My Orders</button><button class="btn alt" style="margin-top:8px" data-act="close">Order more</button></div>`, 'done');
 }
 
@@ -1036,6 +1049,8 @@ function renderOwner(){
     $('#openBtn').setAttribute('aria-pressed', String(!!S.settings.open));
     $('#closeBtn').setAttribute('aria-pressed', String(!S.settings.open));
     const u = $('#upiId'); if(document.activeElement !== u) u.value = S.settings.upi || '';
+    $('#qrPrev').innerHTML = S.settings.qr ? `<img src="${S.settings.qr}" alt="Current QR" style="width:140px;height:140px;object-fit:contain;background:#fff;border-radius:8px;padding:6px">` : 'No QR uploaded. Students will see an auto QR made from the UPI ID.';
+    $('#qrRemove').hidden = !S.settings.qr;
   }
 }
 
@@ -1109,6 +1124,7 @@ document.addEventListener('click', e => {
   if(t.id === 'saveSet'){
     return run(t, async () => { await putSettings({upi:$('#upiId').value.trim()}); $('#setMsg').textContent = 'Saved.'; });
   }
+  if(t.id === 'qrRemove'){ return run(t, async () => { await putSettings({qr:''}); $('#setMsg').textContent = 'QR removed.'; }); }
   if(t.id === 'clearDone'){
     const old = S.orders.filter(o => ['done', 'cancelled'].includes(o.status) && dayKey(o.createdAt) !== dayKey(Date.now()));
     if(!old.length){ $('#clearMsg').textContent = 'There are no old orders.'; return; }
@@ -1161,6 +1177,12 @@ document.addEventListener('input', e => {
 });
 document.addEventListener('change', async e => {
   const t = e.target; if(!t.files) return;
+  if(t.id === 'qrFile'){
+    const f = t.files[0]; t.value = ''; if(!f) return;
+    try{ await putSettings({qr:await fileToPng(f)}); $('#setMsg').textContent = 'QR saved.'; toast('QR saved'); }
+    catch(err){ toast('Could not save the QR. Try a smaller image.'); }
+    return;
+  }
   if(t.dataset && t.dataset.photo){
     const f = t.files[0], id = t.dataset.photo; t.value = '';
     if(!f) return;
