@@ -761,9 +761,16 @@ async function placeOrder(){
   if(phone.length !== 10){ err.textContent = 'Mobile number must be 10 digits.'; $('#fPhone').focus(); return; }
   if(!place){ err.textContent = 'Enter your class, room or seat so the order can reach you.'; $('#fPlace').focus(); return; }
   if(form.utr.trim().length < 6){ err.textContent = 'Pay first, then enter the UPI transaction ID (UTR).'; $('#fUtr').focus(); return; }
+  const utrKey = form.utr.replace(/\s+/g, '').toUpperCase();
+  btn.disabled = true; btn.textContent = 'Checking payment ID...';
+  let used = S.orders.some(x => String(x.utr || '').replace(/\s+/g, '').toUpperCase() === utrKey);
+  if(!used && S.mode === 'db'){
+    try{ const q = await S.db.collection('orders').where('utr', '==', utrKey).limit(1).get(); used = !q.empty; }catch(e){}
+  }
+  if(used){ err.textContent = 'This UTR / transaction ID has already been used for another order. Please pay again and enter the new UTR.'; btn.disabled = false; btn.textContent = 'Place order'; $('#fUtr').focus(); return; }
   const o = {
     id:'o' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), token:nextToken(), uid:S.uid,
-    name, place, phone, slot:form.slot, note:form.note.trim(), pay:'online', utr:form.utr.trim(),
+    name, place, phone, slot:form.slot, note:form.note.trim(), pay:'online', utr:utrKey,
     paid:false, status:'new', total:cartTotal(), createdAt:Date.now(),
     items:items.map(x => ({id:x.m.id, name:x.m.name, price:x.m.price, qty:x.q}))
   };
