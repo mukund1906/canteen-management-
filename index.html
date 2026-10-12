@@ -787,9 +787,10 @@ async function placeOrder(){
 const seenStatus = {};
 let seenInit = false;
 function payTagFor(o){
+  if(o.payRejected) return '<span class="paytag due">Payment not received. Please contact the canteen.</span>';
   if(o.status === 'cancelled') return '';
-  if(o.paid) return '<span class="paytag paid">Payment received</span>';
-  return o.pay === 'online' ? '<span class="paytag due">Owner is checking payment</span>' : '<span class="paytag due">Pay at counter</span>';
+  if(o.paid) return '<span class="paytag paid">Payment confirmed</span>';
+  return o.pay === 'online' ? '<span class="paytag due">Payment pending. Waiting for the owner to confirm</span>' : '<span class="paytag due">Pay at counter</span>';
 }
 function myOrderCard(o){
   return `<article class="ord ${o.status === 'ready' ? 'ready' : ''}">
@@ -1003,18 +1004,19 @@ function beep(){
   }catch(e){}
 }
 function ownerCard(o){
-  const next = {new:['cooking', 'Start preparing'], cooking:['ready', 'Mark ready'], ready:['done', 'Mark collected']}[o.status];
+  const needPay = o.pay === 'online' && !o.paid && o.status !== 'cancelled';
+  const next = needPay ? null : {new:['cooking', 'Start preparing'], cooking:['ready', 'Mark ready'], ready:['done', 'Mark collected']}[o.status];
   const payLine = o.pay === 'online' ? `Online (UPI) · UTR <span class="mono">${esc(o.utr || '-')}</span>` : 'Cash on Delivery';
   return `<article class="ord ${o.status === 'ready' ? 'ready' : ''}">
     <header><span class="tk">#${esc(o.token)}</span><span class="st ${o.status}">${STATUS[o.status] || o.status}</span></header>
     <div><b>${esc(o.name)}</b><div class="meta">${esc(o.place)} · <span class="mono">${esc(o.phone)}</span></div><div class="meta">${SLOT[o.slot] || ''} · ${ago(o.createdAt)}</div></div>
     <ul>${(o.items || []).map(i => `<li><span>${i.qty} × ${esc(i.name)}</span><span>${rs(i.price * i.qty)}</span></li>`).join('')}</ul>
     ${o.note ? `<div class="meta">Note: ${esc(o.note)}</div>` : ''}
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b>Total ${rs(o.total)}</b><span class="paytag ${o.paid ? 'paid' : 'due'}">${o.paid ? 'Payment received' : 'Payment due'}</span></div>
-    <div class="meta">${payLine}</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b>Total ${rs(o.total)}</b><span class="paytag ${o.paid ? 'paid' : 'due'}">${o.paid ? 'Payment received' : o.payRejected ? 'Not received' : o.pay === 'online' ? 'Payment pending' : 'Payment due'}</span></div>
+    ${needPay ? `<div style="border:1.5px solid var(--warn);background:var(--warn-bg);border-radius:10px;padding:8px 10px;margin:4px 0"><b>Check your bank / UPI SMS</b><div class="meta" style="color:inherit">Look for <b>${rs(o.total)}</b> with UTR <span class="mono"><b>${esc(o.utr || '-')}</b></span>. If it matches, confirm below. Preparing starts after you confirm.</div></div>` : `<div class="meta">${payLine}${o.paid && o.paidAt ? ' · confirmed ' + ago(o.paidAt) : ''}${o.payRejected ? ' · <b>payment marked not received</b>' : ''}</div>`}
     <div class="acts">
       ${next ? `<button class="btn sm" data-act="adv" data-id="${o.id}" data-to="${next[0]}">${next[1]}</button>` : ''}
-      ${!o.paid && o.status !== 'cancelled' ? `<button class="btn sm alt" data-act="paid" data-id="${o.id}">Payment received</button>` : ''}
+      ${needPay ? `<button class="btn sm" data-act="paid" data-id="${o.id}">Payment received</button><button class="btn sm bad" data-act="notpaid" data-id="${o.id}">Not received</button>` : (!o.paid && o.status !== 'cancelled' ? `<button class="btn sm alt" data-act="paid" data-id="${o.id}">Payment received</button>` : '')}
       ${o.status === 'new' || o.status === 'cooking' ? `<button class="btn sm bad" data-act="cancel" data-id="${o.id}">Cancel</button>` : ''}
     </div></article>`;
 }
@@ -1154,7 +1156,8 @@ document.addEventListener('click', e => {
     case 'openOwnerLogin': return openLogin('owner');
     case 'logout': return logout();
         case 'adv': return run(t, () => patchOrder(d.id, d.to === 'done' ? {status:'done', paid:true} : {status:d.to}));
-    case 'paid': return run(t, () => patchOrder(d.id, {paid:true}));
+    case 'paid': return run(t, () => patchOrder(d.id, {paid:true, payRejected:false, paidAt:Date.now()}));
+    case 'notpaid': return run(t, () => patchOrder(d.id, {paid:false, payRejected:true, status:'cancelled'}));
     case 'cancel': case 'mycancel': return run(t, () => patchOrder(d.id, {status:'cancelled'}));
     case 'stock': return run(t, () => putSoldOut(d.id, !S.soldOut[d.id]));
     case 'delphoto': return run(t, () => delPhoto(d.id));
