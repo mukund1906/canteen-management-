@@ -2,13 +2,15 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Student aur owner accounts: ek-ek karke padh sakte hain, poori list nahi dikhti.
-    // Account ban jaane ke baad badla nahi ja sakta.
+    // Student accounts: ek-ek karke padh sakte hain, poori list nahi dikhti.
+    // Account banana / password reset sirf tab jab us mobile number ka OTP verify ho chuka ho.
     match /accounts/{id} {
       allow get: if true;
       allow list: if false;
-      allow create: if true;
-      allow update, delete: if false;
+      allow create, update: if request.auth != null
+        && request.auth.token.phone_number != null
+        && id == 's' + request.auth.token.phone_number.substring(3);
+      allow delete: if false;
     }
 
     match /orders/{id}   { allow read, write: if true; }
