@@ -8,12 +8,9 @@ service cloud.firestore {
       allow get: if true;
       allow list: if false;
       allow create: if true;
-      // Password reset: sirf salt/hash/resetAt badal sakte hain (owner temporary password deta hai).
-      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['salt', 'hash', 'resetAt']);
-      allow delete: if false;
+      allow update, delete: if false;
     }
 
-    match /resetreqs/{id} { allow read, write: if true; }
     match /orders/{id}   { allow read, write: if true; }
     match /menu/{id}     { allow read, write: if true; }
     match /photos/{id}   { allow read, write: if true; }
