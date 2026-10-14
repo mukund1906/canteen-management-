@@ -230,6 +230,7 @@ foot{display:block}
           <div class="fld"><span class="lbl">Canteen is now</span>
             <div class="seg"><button id="openBtn" aria-pressed="true">Open</button><button id="closeBtn" aria-pressed="false">Closed</button></div>
           </div>
+          <div id="resetPanel" style="margin:4px 0 14px"></div>
           <div class="fld"><label for="upiId">UPI ID (for online payment)</label><input id="upiId" placeholder="naam@bank" autocomplete="off"></div>
           <div class="fld"><span class="lbl">Payment QR code image (optional)</span>
             <div id="qrPrev" class="meta" style="margin:6px 0">No QR uploaded. Students will see an auto QR made from the UPI ID.</div>
@@ -412,7 +413,7 @@ const LS = {
 };
 let SESSION = LS.get('session', null);   // {role:'student', mobile, name} or {role:'owner', id}
 const DEFAULT_UPI = 'canteen@upi';
-const S = { mode:'local', db:null, uid:'', admin:false, orders:[], soldOut:{}, photos:{}, photoVer:0, items:{}, removed:{}, settings:{open:true, upi:DEFAULT_UPI, qr:''}, err:null };
+const S = { mode:'local', db:null, uid:'', admin:false, orders:[], soldOut:{}, photos:{}, photoVer:0, items:{}, removed:{}, resets:{}, settings:{open:true, upi:DEFAULT_UPI, qr:''}, err:null };
 const listeners = [];
 const onChange = fn => listeners.push(fn);
 const fire = () => listeners.forEach(f => { try{ f(); }catch(e){ console.error(e); } });
@@ -422,7 +423,7 @@ function loadLocal(){
   S.orders = LS.get('orders', []);
   S.soldOut = LS.get('soldOut', {});
   S.photos = LS.get('photos', {}); S.photoVer++;
-  S.items = LS.get('items', {}); S.removed = LS.get('removed', {});
+  S.items = LS.get('items', {}); S.removed = LS.get('removed', {}); S.resets = LS.get('resetreqs', {});
   S.settings = withDefaults(LS.get('settings', {}));
 }
 
@@ -455,6 +456,9 @@ async function initStore(){
       () => {});
     db.collection('removed').onSnapshot(
       snap => { const o = {}; snap.docs.forEach(d => { o[d.id] = true; }); S.removed = o; fire(); },
+      () => {});
+    db.collection('resetreqs').onSnapshot(
+      snap => { const o = {}; snap.docs.forEach(d => { o[d.id] = d.data(); }); S.resets = o; fire(); },
       () => {});
     db.collection('photos').onSnapshot(
       snap => { const o = {}; snap.docs.forEach(d => { const v = (d.data() || {}).img; if(v) o[d.id] = v; }); S.photos = o; S.photoVer++; fire(); },
@@ -496,6 +500,19 @@ async function putAccount(key, data){
   else { const a = LS.get('accounts', {}); a[key] = data; LS.set('accounts', a); }
 }
 
+async function putResetReq(key, data){
+  if(S.mode === 'db'){ await S.db.doc('resetreqs/' + key).set(data); }
+  else { const a = LS.get('resetreqs', {}); a[key] = data; LS.set('resetreqs', a); loadLocal(); fire(); }
+}
+async function delResetReq(key){
+  if(S.mode === 'db'){ await S.db.doc('resetreqs/' + key).delete(); }
+  else { const a = LS.get('resetreqs', {}); delete a[key]; LS.set('resetreqs', a); loadLocal(); fire(); }
+}
+async function setPassword(key, pw){
+  const h = await hashPw(pw);
+  if(S.mode === 'db'){ await S.db.doc('accounts/' + key).update({salt:h.salt, hash:h.hash, resetAt:Date.now()}); }
+  else { const a = LS.get('accounts', {}); a[key] = Object.assign({}, a[key], {salt:h.salt, hash:h.hash, resetAt:Date.now()}); LS.set('accounts', a); }
+}
 async function putOrder(o){
   if(S.mode === 'db'){ await S.db.doc('orders/' + o.id).set(o); }
   else { const a = LS.get('orders', []); a.push(o); LS.set('orders', a); loadLocal(); fire(); }
@@ -852,7 +869,19 @@ async function openLogin(role, mode, note){
       <div class="fld"><label for="lPass">Password</label><input id="lPass" type="password" autocomplete="current-password"></div>
       <div class="err" id="lErr" role="alert"></div>
       <button class="btn" type="submit">Log in</button></form>
-      <p class="meta" style="margin-top:12px">New here? <button type="button" class="linkbtn" data-lmode="register">Create account</button></p>`;
+      <p class="meta" style="margin-top:12px">New here? <button type="button" class="linkbtn" data-lmode="register">Create account</button></p>
+      <p class="meta" style="margin-top:6px"><button type="button" class="linkbtn" data-lmode="forgot">Forgot password?</button></p>`;
+  } else if(!isOwner && LG.mode === 'forgot'){
+    body = `<form id="loginForm" data-kind="fsend" novalidate>
+      <p class="meta" style="margin:0 0 10px">Enter your registered mobile number. The canteen owner will be notified and will give you a temporary password.</p>
+      <div class="fld"><label for="lMobile">Mobile number</label><input id="lMobile" inputmode="numeric" maxlength="10" autocomplete="username" placeholder="10 digits"></div>
+      <div class="err" id="lErr" role="alert"></div>
+      <button class="btn" type="submit">Request password reset</button></form>
+      <p class="meta" style="margin-top:12px"><button type="button" class="linkbtn" data-lmode="login">Back to login</button></p>`;
+  } else if(!isOwner && LG.mode === 'forgotsent'){
+    body = `<p style="margin:0 0 10px"><b>Request sent.</b></p>
+      <p class="meta" style="margin:0 0 12px">Please ask the canteen owner for your temporary password, then log in with it. You can place orders as usual after logging in.</p>
+      <button type="button" class="btn" data-lmode="login">Back to login</button>`;
   } else if(!isOwner){
     body = `<form id="loginForm" data-kind="sreg" novalidate>
       <div class="fld"><label for="lName">Your name</label><input id="lName" autocomplete="name"></div>
@@ -881,7 +910,7 @@ async function openLogin(role, mode, note){
       <div class="err" id="lErr" role="alert"></div>
       <button class="btn" type="submit">Owner login</button></form>`;
   }
-  openSheet(`<h2>${isOwner ? 'Owner login' : LG.mode === 'register' ? 'New student account' : 'Student login'} <button class="x" data-act="close" aria-label="Close">×</button></h2>
+  openSheet(`<h2>${isOwner ? 'Owner login' : LG.mode === 'register' ? 'New student account' : LG.mode === 'forgot' || LG.mode === 'forgotsent' ? 'Forgot password' : 'Student login'} <button class="x" data-act="close" aria-label="Close">×</button></h2>
     ${LG.note ? `<p class="meta" style="margin:0 0 12px;color:var(--ink)">${esc(LG.note)}</p>` : ''}${tabs}${body}
     ${!SESSION && !isOwner ? '<p class="meta" style="margin-top:8px"><button type="button" class="linkbtn" data-act="close">Browse the menu without logging in</button></p>' : ''}`, 'login');
   const first = $('#lMobile') || $('#lOwner') || $('#lName'); if(first && !first.value) first.focus();
@@ -898,6 +927,13 @@ async function handleLogin(kind){
       const acc = await getAccount('s' + m);
       if(!acc || !(await verifyPw(pw, acc))){ await sleep(700); throw {u:'Wrong mobile number or password.'}; }
       startSession({role:'student', mobile:m, name:acc.name});
+    } else if(kind === 'fsend'){
+      const m = val('lMobile').replace(/\D/g, '');
+      if(m.length !== 10) throw {u:'Mobile number must be 10 digits.'};
+      const acc = await getAccount('s' + m);
+      if(!acc) throw {u:'No account found with this number. Please create an account first.'};
+      await putResetReq('s' + m, {mobile:m, name:acc.name || '', at:Date.now()});
+      return openLogin('student', 'forgotsent', '');
     } else if(kind === 'sreg'){
       const name = val('lName').trim(), m = val('lMobile').replace(/\D/g, ''), pw = val('lPass');
       if(name.length < 2) throw {u:'Enter your name.'};
@@ -1058,6 +1094,10 @@ function renderOwner(){
     $('#openBtn').setAttribute('aria-pressed', String(!!S.settings.open));
     $('#closeBtn').setAttribute('aria-pressed', String(!S.settings.open));
     const u = $('#upiId'); if(document.activeElement !== u) u.value = S.settings.upi || '';
+    const rq = Object.keys(S.resets || {}).map(k => Object.assign({key:k}, S.resets[k])).sort((a, b) => b.at - a.at);
+    $('#resetPanel').innerHTML = `<b>Password reset requests (${rq.length})</b>` +
+      (UI.resetDone ? `<div style="border:1.5px solid var(--good);background:var(--good-bg);border-radius:10px;padding:8px 10px;margin:8px 0"><b>Temporary password for ${esc(UI.resetDone.name)} (${esc(UI.resetDone.mobile)})</b><div class="mono" style="font-size:1.3rem;margin:4px 0">${esc(UI.resetDone.pw)}</div><div class="meta" style="color:inherit">Tell this to the student. It is shown only now.</div></div>` : '') +
+      (rq.length ? rq.map(r => `<div class="stk" style="margin-top:8px"><div class="n">${esc(r.name || 'Student')}<div class="meta">${esc(r.mobile)} · ${ago(r.at)}</div></div><button class="btn sm" data-act="resetpw" data-id="${r.key}">Give temporary password</button><button class="btn sm alt" data-act="resetno" data-id="${r.key}">Dismiss</button></div>`).join('') : '<p class="meta" style="margin:6px 0 0">No requests.</p>');
     $('#qrPrev').innerHTML = S.settings.qr ? `<img src="${S.settings.qr}" alt="Current QR" style="width:140px;height:140px;object-fit:contain;background:#fff;border-radius:8px;padding:6px">` : 'No QR uploaded. Students will see an auto QR made from the UPI ID.';
     $('#qrRemove').hidden = !S.settings.qr;
   }
@@ -1154,6 +1194,13 @@ document.addEventListener('click', e => {
     }
     case 'openLogin': return openLogin('student', 'login');
     case 'openOwnerLogin': return openLogin('owner');
+    case 'resetpw': return run(t, async () => {
+      const r = S.resets[d.id]; if(!r) return;
+      const pw = String(Math.floor(100000 + Math.random() * 900000));
+      await setPassword(d.id, pw); await delResetReq(d.id);
+      UI.resetDone = {name:r.name || 'Student', mobile:r.mobile, pw}; renderOwner();
+    });
+    case 'resetno': return run(t, () => delResetReq(d.id));
     case 'logout': return logout();
         case 'adv': return run(t, () => patchOrder(d.id, d.to === 'done' ? {status:'done', paid:true} : {status:d.to}));
     case 'paid': return run(t, () => patchOrder(d.id, {paid:true, payRejected:false, paidAt:Date.now()}));
