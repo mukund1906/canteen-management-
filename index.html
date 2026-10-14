@@ -254,6 +254,7 @@ foot{display:block}
 <script src="firebase-config.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script>
 /* ===== MENU DATA + DRAWN FOOD IMAGES ===== */
 const CATS = [
@@ -839,6 +840,35 @@ function logout(){
   renderAuthBtn(); showTab('menu'); toast('Logged out');
 }
 
+
+/* ===== Phone OTP (Firebase Phone Auth) ===== */
+let PEND = null;   /* {flow:'reg'|'login'|'forgot', mobile, name, pass, conf} */
+const otpReady = () => S.mode === 'db' && !!(window.firebase && firebase.auth);
+function otpMsg(e){
+  const c = (e && e.code) || '';
+  const m = {
+    'auth/invalid-phone-number':'Invalid mobile number.',
+    'auth/too-many-requests':'Too many attempts. Please wait a while and try again.',
+    'auth/operation-not-allowed':'Phone sign-in is not enabled in Firebase yet.',
+    'auth/unauthorized-domain':'This website address is not authorised in Firebase (Authentication > Settings > Authorized domains).',
+    'auth/quota-exceeded':'The SMS limit is over for now. Please try later.',
+    'auth/billing-not-enabled':'SMS sending needs the Firebase Blaze plan, or use a test number.',
+    'auth/invalid-verification-code':'Wrong OTP. Check the code and try again.',
+    'auth/code-expired':'This OTP has expired. Tap Resend OTP.',
+    'auth/captcha-check-failed':'Security check failed. Refresh the page and try again.'
+  };
+  return m[c] || 'Could not complete the OTP step. Check your internet and try again.';
+}
+async function otpSend(mobile){
+  if(!otpReady()) throw {u:'OTP works only on the live site with Firebase.'};
+  const auth = firebase.auth();
+  try{ if(window._rv) window._rv.clear(); }catch(x){}
+  const box = $('#recaptchaBox'); if(box) box.innerHTML = '';
+  window._rv = new firebase.auth.RecaptchaVerifier('recaptchaBox', {size:'invisible'});
+  try{ return await auth.signInWithPhoneNumber('+91' + mobile, window._rv); }
+  catch(e){ try{ window._rv.clear(); }catch(x){} throw {u:otpMsg(e)}; }
+}
+
 async function openLogin(role, mode, note){
   LG = {role:role || 'student', mode:mode || 'login', note:note || ''};
   let acc = null, accErr = false;
@@ -852,7 +882,24 @@ async function openLogin(role, mode, note){
       <div class="fld"><label for="lPass">Password</label><input id="lPass" type="password" autocomplete="current-password"></div>
       <div class="err" id="lErr" role="alert"></div>
       <button class="btn" type="submit">Log in</button></form>
-      <p class="meta" style="margin-top:12px">New here? <button type="button" class="linkbtn" data-lmode="register">Create account</button></p>`;
+      <p class="meta" style="margin-top:12px">New here? <button type="button" class="linkbtn" data-lmode="register">Create account</button></p>
+      ${otpReady() ? '<p class="meta" style="margin-top:6px"><button type="button" class="linkbtn" data-lmode="otplogin">Login with OTP</button> &nbsp;·&nbsp; <button type="button" class="linkbtn" data-lmode="forgot">Forgot password?</button></p>' : ''}`;
+  } else if(!isOwner && (LG.mode === 'otplogin' || LG.mode === 'forgot')){
+    body = `<form id="loginForm" data-kind="${LG.mode === 'forgot' ? 'fsend' : 'osend'}" novalidate>
+      <p class="meta" style="margin:0 0 10px">${LG.mode === 'forgot' ? 'Enter your registered mobile number. We will send an OTP to reset your password.' : 'Enter your mobile number. We will send you a one-time password (OTP) by SMS.'}</p>
+      <div class="fld"><label for="lMobile">Mobile number</label><input id="lMobile" inputmode="numeric" maxlength="10" autocomplete="username" placeholder="10 digits"></div>
+      <div class="err" id="lErr" role="alert"></div>
+      <button class="btn" type="submit">Send OTP</button></form>
+      <p class="meta" style="margin-top:12px"><button type="button" class="linkbtn" data-lmode="login">Back to password login</button></p>`;
+  } else if(!isOwner && LG.mode === 'otp' && PEND){
+    body = `<form id="loginForm" data-kind="otpverify" novalidate>
+      <p class="meta" style="margin:0 0 10px">We sent a 6-digit OTP to <b>+91 ${esc(PEND.mobile)}</b>.</p>
+      <div class="fld"><label for="lCode">OTP</label><input id="lCode" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="6 digits"></div>
+      ${PEND.flow === 'forgot' ? `<div class="two"><div class="fld"><label for="lPass">New password (4+ characters)</label><input id="lPass" type="password" autocomplete="new-password"></div>
+      <div class="fld"><label for="lPass2">Confirm new password</label><input id="lPass2" type="password" autocomplete="new-password"></div></div>` : ''}
+      <div class="err" id="lErr" role="alert"></div>
+      <button class="btn" type="submit">${PEND.flow === 'forgot' ? 'Reset password and log in' : PEND.flow === 'reg' ? 'Verify and create account' : 'Verify and log in'}</button></form>
+      <p class="meta" style="margin-top:12px"><button type="button" class="linkbtn" data-act="otpresend">Resend OTP</button> &nbsp;·&nbsp; <button type="button" class="linkbtn" data-lmode="login">Change number</button></p>`;
   } else if(!isOwner){
     body = `<form id="loginForm" data-kind="sreg" novalidate>
       <div class="fld"><label for="lName">Your name</label><input id="lName" autocomplete="name"></div>
@@ -861,7 +908,8 @@ async function openLogin(role, mode, note){
       <div class="fld"><label for="lPass2">Confirm password</label><input id="lPass2" type="password" autocomplete="new-password"></div></div>
       <div class="err" id="lErr" role="alert"></div>
       <button class="btn" type="submit">Create account</button></form>
-      <p class="meta" style="margin-top:12px">Have an account? <button type="button" class="linkbtn" data-lmode="login">Log in</button></p>`;
+      <p class="meta" style="margin-top:12px">Have an account? <button type="button" class="linkbtn" data-lmode="login">Log in</button></p>
+      ${otpReady() ? '<p class="meta" style="margin-top:6px">We will send an OTP to your mobile to verify it.</p>' : ''}`;
   } else if(accErr){
     body = '<div class="err" role="alert">Could not check the owner account. Check your internet and open it again.</div>';
   } else if(!acc){
@@ -881,9 +929,9 @@ async function openLogin(role, mode, note){
       <div class="err" id="lErr" role="alert"></div>
       <button class="btn" type="submit">Owner login</button></form>`;
   }
-  openSheet(`<h2>${isOwner ? 'Owner login' : LG.mode === 'register' ? 'New student account' : 'Student login'} <button class="x" data-act="close" aria-label="Close">×</button></h2>
+  openSheet(`<h2>${isOwner ? 'Owner login' : LG.mode === 'register' ? 'New student account' : LG.mode === 'otp' ? 'Enter OTP' : LG.mode === 'forgot' ? 'Forgot password' : LG.mode === 'otplogin' ? 'Login with OTP' : 'Student login'} <button class="x" data-act="close" aria-label="Close">×</button></h2>
     ${LG.note ? `<p class="meta" style="margin:0 0 12px;color:var(--ink)">${esc(LG.note)}</p>` : ''}${tabs}${body}
-    ${!SESSION && !isOwner ? '<p class="meta" style="margin-top:8px"><button type="button" class="linkbtn" data-act="close">Browse the menu without logging in</button></p>' : ''}`, 'login');
+    ${!SESSION && !isOwner ? '<p class="meta" style="margin-top:8px"><button type="button" class="linkbtn" data-act="close">Browse the menu without logging in</button></p>' : ''}<div id="recaptchaBox"></div>`, 'login');
   const first = $('#lMobile') || $('#lOwner') || $('#lName'); if(first && !first.value) first.focus();
 }
 
@@ -905,9 +953,50 @@ async function handleLogin(kind){
       if(pw.length < 4) throw {u:'Password must be at least 4 characters.'};
       if(pw !== val('lPass2')) throw {u:'The passwords do not match.'};
       if(await getAccount('s' + m)) throw {u:'An account with this number already exists. Please log in.'};
+      if(otpReady()){
+        const conf = await otpSend(m);
+        PEND = {flow:'reg', mobile:m, name, pass:pw, conf};
+        return openLogin('student', 'otp', LG.note);
+      }
       const h = await hashPw(pw);
       await putAccount('s' + m, {name, mobile:m, salt:h.salt, hash:h.hash, createdAt:Date.now()});
       startSession({role:'student', mobile:m, name});
+    } else if(kind === 'osend' || kind === 'fsend'){
+      const m = val('lMobile').replace(/\D/g, '');
+      if(m.length !== 10) throw {u:'Mobile number must be 10 digits.'};
+      if(!(await getAccount('s' + m))) throw {u:'No account found with this number. Please create an account first.'};
+      const conf = await otpSend(m);
+      PEND = {flow:kind === 'fsend' ? 'forgot' : 'login', mobile:m, conf};
+      return openLogin('student', 'otp', LG.note);
+    } else if(kind === 'otpverify'){
+      if(!PEND) throw {u:'Please start again.'};
+      const code = val('lCode').replace(/\D/g, ''), np = val('lPass');
+      if(code.length !== 6) throw {u:'Enter the 6-digit OTP.'};
+      if(PEND.flow === 'forgot'){
+        if(np.length < 4) throw {u:'New password must be at least 4 characters.'};
+        if(np !== val('lPass2')) throw {u:'The passwords do not match.'};
+      }
+      try{ await PEND.conf.confirm(code); }catch(e){ throw {u:otpMsg(e)}; }
+      const m = PEND.mobile, key = 's' + m;
+      try{
+        if(PEND.flow === 'reg'){
+          const h = await hashPw(PEND.pass);
+          await putAccount(key, {name:PEND.name, mobile:m, salt:h.salt, hash:h.hash, verified:true, createdAt:Date.now()});
+          startSession({role:'student', mobile:m, name:PEND.name});
+        } else {
+          const acc = await getAccount(key);
+          if(!acc) throw {u:'No account found with this number.'};
+          if(PEND.flow === 'forgot'){
+            const h = await hashPw(np);
+            await S.db.doc('accounts/' + key).update({salt:h.salt, hash:h.hash, resetAt:Date.now()});
+          }
+          startSession({role:'student', mobile:m, name:acc.name});
+        }
+      }catch(e){
+        if(e && e.code === 'permission-denied') throw {u:'The database rules need to be updated first (see setup steps).'};
+        throw e;
+      }finally{ try{ await firebase.auth().signOut(); }catch(x){} }
+      PEND = null;
     } else if(kind === 'oset'){
       const id = val('lOwner').trim().toLowerCase(), pw = val('lPass');
       if(id.length < 3) throw {u:'Owner ID must be at least 3 characters.'};
@@ -1154,6 +1243,11 @@ document.addEventListener('click', e => {
     }
     case 'openLogin': return openLogin('student', 'login');
     case 'openOwnerLogin': return openLogin('owner');
+    case 'otpresend': {
+      if(!PEND) return openLogin('student', 'login');
+      const er = $('#lErr'); if(er) er.textContent = '';
+      return (async () => { try{ PEND.conf = await otpSend(PEND.mobile); toast('OTP sent again'); }catch(e){ if(er) er.textContent = e.u || 'Could not send the OTP.'; } })();
+    }
     case 'logout': return logout();
         case 'adv': return run(t, () => patchOrder(d.id, d.to === 'done' ? {status:'done', paid:true} : {status:d.to}));
     case 'paid': return run(t, () => patchOrder(d.id, {paid:true, payRejected:false, paidAt:Date.now()}));
