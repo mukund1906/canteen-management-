@@ -972,6 +972,8 @@ async function handleLogin(kind){
         if(np !== val('lPass2')) throw {u:'The passwords do not match.'};
       }
       try{ await PEND.conf.confirm(code); }catch(e){ throw {u:otpMsg(e)}; }
+      try{ await firebase.auth().currentUser.getIdToken(true); }catch(x){}
+      await sleep(800);
       const m = PEND.mobile, key = 's' + m;
       try{
         if(PEND.flow === 'reg'){
@@ -988,7 +990,10 @@ async function handleLogin(kind){
           startSession({role:'student', mobile:m, name:acc.name});
         }
       }catch(e){
-        if(e && e.code === 'permission-denied') throw {u:'The database rules need to be updated first (see setup steps).'};
+        if(e && e.code === 'permission-denied'){
+          const cu = firebase.auth().currentUser;
+          throw {u:'Database rejected the update. Signed in as: ' + (cu ? cu.phoneNumber : 'nobody') + ', account: ' + key + '. Please send this message to the developer.'};
+        }
         throw e;
       }finally{ try{ await firebase.auth().signOut(); }catch(x){} }
       PEND = null;
