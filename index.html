@@ -883,8 +883,8 @@ async function openLogin(role, mode, note){
       <div class="err" id="lErr" role="alert"></div>
       <button class="btn" type="submit">Log in</button></form>
       <p class="meta" style="margin-top:12px">New here? <button type="button" class="linkbtn" data-lmode="register">Create account</button></p>
-      ${otpReady() ? '<p class="meta" style="margin-top:6px"><button type="button" class="linkbtn" data-lmode="otplogin">Login with OTP</button> &nbsp;·&nbsp; <button type="button" class="linkbtn" data-lmode="forgot">Forgot password?</button></p>' : ''}`;
-  } else if(!isOwner && (LG.mode === 'otplogin' || LG.mode === 'forgot')){
+      ${otpReady() ? '<p class="meta" style="margin-top:6px"><button type="button" class="linkbtn" data-lmode="forgot">Forgot password?</button></p>' : ''}`;
+  } else if(!isOwner && (LG.mode === 'forgot')){
     body = `<form id="loginForm" data-kind="${LG.mode === 'forgot' ? 'fsend' : 'osend'}" novalidate>
       <p class="meta" style="margin:0 0 10px">${LG.mode === 'forgot' ? 'Enter your registered mobile number. We will send an OTP to reset your password.' : 'Enter your mobile number. We will send you a one-time password (OTP) by SMS.'}</p>
       <div class="fld"><label for="lMobile">Mobile number</label><input id="lMobile" inputmode="numeric" maxlength="10" autocomplete="username" placeholder="10 digits"></div>
@@ -909,7 +909,7 @@ async function openLogin(role, mode, note){
       <div class="err" id="lErr" role="alert"></div>
       <button class="btn" type="submit">Create account</button></form>
       <p class="meta" style="margin-top:12px">Have an account? <button type="button" class="linkbtn" data-lmode="login">Log in</button></p>
-      ${otpReady() ? '<p class="meta" style="margin-top:6px">We will send an OTP to your mobile to verify it.</p>' : ''}`;
+`;
   } else if(accErr){
     body = '<div class="err" role="alert">Could not check the owner account. Check your internet and open it again.</div>';
   } else if(!acc){
@@ -953,20 +953,15 @@ async function handleLogin(kind){
       if(pw.length < 4) throw {u:'Password must be at least 4 characters.'};
       if(pw !== val('lPass2')) throw {u:'The passwords do not match.'};
       if(await getAccount('s' + m)) throw {u:'An account with this number already exists. Please log in.'};
-      if(otpReady()){
-        const conf = await otpSend(m);
-        PEND = {flow:'reg', mobile:m, name, pass:pw, conf};
-        return openLogin('student', 'otp', LG.note);
-      }
       const h = await hashPw(pw);
       await putAccount('s' + m, {name, mobile:m, salt:h.salt, hash:h.hash, createdAt:Date.now()});
       startSession({role:'student', mobile:m, name});
-    } else if(kind === 'osend' || kind === 'fsend'){
+    } else if(kind === 'fsend'){
       const m = val('lMobile').replace(/\D/g, '');
       if(m.length !== 10) throw {u:'Mobile number must be 10 digits.'};
       if(!(await getAccount('s' + m))) throw {u:'No account found with this number. Please create an account first.'};
       const conf = await otpSend(m);
-      PEND = {flow:kind === 'fsend' ? 'forgot' : 'login', mobile:m, conf};
+      PEND = {flow:'forgot', mobile:m, conf};
       return openLogin('student', 'otp', LG.note);
     } else if(kind === 'otpverify'){
       if(!PEND) throw {u:'Please start again.'};
