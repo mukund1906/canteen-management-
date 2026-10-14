@@ -857,7 +857,7 @@ function otpMsg(e){
     'auth/code-expired':'This OTP has expired. Tap Resend OTP.',
     'auth/captcha-check-failed':'Security check failed. Refresh the page and try again.'
   };
-  return m[c] || 'Could not complete the OTP step. Check your internet and try again.';
+  return (m[c] || 'Could not complete the OTP step. Check your internet and try again.') + (c ? ' [' + c + ']' : '');
 }
 async function otpSend(mobile){
   if(!otpReady()) throw {u:'OTP works only on the live site with Firebase.'};
