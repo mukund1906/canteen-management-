@@ -10,8 +10,8 @@ service cloud.firestore {
       allow create: if true;
       // Password reset sirf tab jab us mobile number ka OTP verify ho chuka ho.
       allow update: if request.auth != null
-        && request.auth.token.phone_number != null
-        && id == 's' + request.auth.token.phone_number.substring(3);
+        && request.auth.token.phone_number == '+91' + resource.data.mobile
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['salt', 'hash', 'resetAt']);
       allow delete: if false;
     }
 

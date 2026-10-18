@@ -985,6 +985,7 @@ async function handleLogin(kind){
           if(!acc) throw {u:'No account found with this number.'};
           if(PEND.flow === 'forgot'){
             const h = await hashPw(np);
+            try{ await firebase.auth().currentUser.getIdToken(true); }catch(x){}
             await S.db.doc('accounts/' + key).update({salt:h.salt, hash:h.hash, resetAt:Date.now()});
           }
           startSession({role:'student', mobile:m, name:acc.name});
